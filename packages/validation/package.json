@@ -1,0 +1,11 @@
+{
+  "name": "@arcfundpool/validation",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "@arcfundpool/config": "workspace:*",
+    "zod": "^4.1.13"
+  }
+}

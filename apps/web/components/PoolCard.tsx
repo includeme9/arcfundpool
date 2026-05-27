@@ -1,0 +1,47 @@
+import Link from "next/link";
+import { CalendarDays, Wallet } from "lucide-react";
+import type { FundingPool } from "@arcfundpool/types";
+import { daysLeft, formatUSDC, shortenAddress } from "@arcfundpool/utils";
+import { PoolProgress } from "@/components/PoolProgress";
+import { StatusBadge } from "@/components/StatusBadge";
+
+export function PoolCard({ pool }: { pool: FundingPool }) {
+  return (
+    <Link href={`/pool/${pool.id}`} className="card block p-5 transition hover:-translate-y-1 hover:border-blue-300/35">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--cyan)]">{pool.category}</p>
+          <h3 className="mt-2 line-clamp-2 text-xl font-semibold text-white">{pool.title}</h3>
+        </div>
+        <StatusBadge status={pool.status} />
+      </div>
+      <p className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--muted)]">{pool.description}</p>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <Metric label="Raised" value={formatUSDC(pool.totalRaised, 0)} />
+        <Metric label="Target" value={formatUSDC(pool.targetAmount, 0)} />
+      </div>
+      <div className="mt-5">
+        <PoolProgress raised={pool.totalRaised} target={pool.targetAmount} />
+      </div>
+      <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-[var(--muted)]">
+        <span className="inline-flex items-center gap-1">
+          <CalendarDays size={14} />
+          {pool.status === "active" ? `${daysLeft(pool.deadline)} days left` : "Deadline passed"}
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Wallet size={14} />
+          {shortenAddress(pool.creatorWallet)}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+      <p className="text-xs text-[var(--muted)]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}

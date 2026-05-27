@@ -1,0 +1,10 @@
+{
+  "name": "@arcfundpool/utils",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "@arcfundpool/types": "workspace:*"
+  }
+}

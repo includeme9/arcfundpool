@@ -1,0 +1,16 @@
+{
+  "name": "arcfundpool",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Transparent USDC funding pools on Arc.",
+  "packageManager": "pnpm@11.1.3",
+  "scripts": {
+    "dev": "pnpm --filter @arcfundpool/web dev",
+    "build": "pnpm --filter @arcfundpool/web build",
+    "lint": "pnpm --filter @arcfundpool/web lint",
+    "typecheck": "pnpm --filter @arcfundpool/web typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

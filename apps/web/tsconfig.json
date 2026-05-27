@@ -1,0 +1,56 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@arcfundpool/config": [
+        "../../packages/config/index.ts"
+      ],
+      "@arcfundpool/config/*": [
+        "../../packages/config/*"
+      ],
+      "@arcfundpool/types": [
+        "../../packages/types/index.ts"
+      ],
+      "@arcfundpool/types/*": [
+        "../../packages/types/*"
+      ],
+      "@arcfundpool/utils": [
+        "../../packages/utils/index.ts"
+      ],
+      "@arcfundpool/utils/*": [
+        "../../packages/utils/*"
+      ],
+      "@arcfundpool/validation": [
+        "../../packages/validation/index.ts"
+      ],
+      "@arcfundpool/validation/*": [
+        "../../packages/validation/*"
+      ],
+      "@arcfundpool/web3": [
+        "../../packages/web3/index.ts"
+      ],
+      "@arcfundpool/web3/*": [
+        "../../packages/web3/*"
+      ]
+    },
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
