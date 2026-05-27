@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CalendarDays, CheckCircle2, ShieldCheck, Wallet } from "lucide-react";
+import { CalendarDays, CircleDollarSign, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
 import { contributions, pools, transactions } from "@/lib/mock-data";
 import { AddressPill } from "@/components/AddressPill";
 import { PoolProgress } from "@/components/PoolProgress";
@@ -27,7 +27,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
               <StatusBadge status={pool.status} />
               <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-[var(--muted)]">{pool.category}</span>
             </div>
-            <h1 className="mt-4 text-3xl font-semibold text-white md:text-5xl">{pool.title}</h1>
+            <h1 className="mt-4 text-3xl font-semibold leading-tight text-white md:text-5xl">{pool.title}</h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--muted)]">{pool.description}</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <AddressPill address={pool.creatorWallet} />
@@ -51,6 +51,14 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             </div>
             <div className="mt-6">
               <PoolProgress raised={pool.totalRaised} target={pool.targetAmount} />
+            </div>
+          </section>
+
+          <section id="contribute" className="card p-5 md:p-6 lg:hidden">
+            <h2 className="text-xl font-semibold text-white">Contribute USDC</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Approve USDC if needed, then contribute to this pool on Arc Testnet.</p>
+            <div className="mt-5">
+              <ContributionInput />
             </div>
           </section>
 
@@ -100,15 +108,19 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
         </div>
 
         <aside className="space-y-6">
-          <div className="card sticky top-24 p-5 md:p-6">
+          <div className="card sticky top-24 hidden p-5 md:p-6 lg:block">
             <h2 className="text-xl font-semibold text-white">Contribute USDC</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Approve USDC if needed, then contribute to this pool on Arc Testnet.</p>
             <div className="mt-5">
               <ContributionInput />
             </div>
           </div>
-          <div className="card p-5">
-            <h2 className="font-semibold text-white">Creator actions</h2>
+          <div className="card border-emerald-300/15 p-5">
+            <div className="flex items-center gap-2">
+              <LockKeyhole size={18} className="text-emerald-300" />
+              <h2 className="font-semibold text-white">Creator actions</h2>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Creator controls are available only when the pool rules allow them.</p>
             <div className="mt-4 grid gap-3">
               <button disabled={!funded || pool.withdrawn} className="tap-target rounded-full bg-emerald-500 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
                 Withdraw if funded
@@ -118,17 +130,28 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
               </button>
             </div>
           </div>
-          <div className="card p-5">
-            <h2 className="font-semibold text-white">Contributor actions</h2>
+          <div className="card border-cyan-300/15 p-5">
+            <div className="flex items-center gap-2">
+              <RotateCcw size={18} className="text-cyan-200" />
+              <h2 className="font-semibold text-white">Contributor actions</h2>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Refunds are available when a pool is cancelled or expires below target.</p>
             <button disabled={!refundable} className="tap-target mt-4 w-full rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
               Claim refund
             </button>
+          </div>
+          <div className="card p-5">
+            <div className="flex items-center gap-2">
+              <CircleDollarSign size={18} className="text-[var(--primary-strong)]" />
+              <h2 className="font-semibold text-white">Arc and USDC</h2>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Arc Testnet is the network for pool activity. USDC is used for contributions, settlement, refunds, withdrawals, and Arc gas.</p>
           </div>
         </aside>
       </div>
 
       <StickyMobileCTA>
-        <button className="tap-target w-full rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white">Contribute USDC</button>
+        <a href="#contribute" className="tap-target flex w-full items-center justify-center rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white">Contribute USDC</a>
       </StickyMobileCTA>
     </section>
   );

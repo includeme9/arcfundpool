@@ -27,11 +27,11 @@ export default function LandingPage() {
             Launch a pool, accept USDC contributions, and let your community track funding progress with onchain records.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/create" className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white">
+            <Link href="/create" className="tap-target inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white sm:w-auto">
               Create Pool
               <ArrowRight size={18} />
             </Link>
-            <Link href="/explore" className="tap-target inline-flex items-center justify-center rounded-full border border-white/10 px-6 py-3 font-semibold text-white">
+            <Link href="/explore" className="tap-target inline-flex w-full items-center justify-center rounded-full border border-white/10 px-6 py-3 font-semibold text-white sm:w-auto">
               Explore Pools
             </Link>
           </div>

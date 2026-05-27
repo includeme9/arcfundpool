@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, XCircle } from "lucide-react";
 import { POOL_CATEGORIES } from "@arcfundpool/config";
 import { createPoolSchema, type CreatePoolInput } from "@arcfundpool/validation";
 import { PoolProgress } from "@/components/PoolProgress";
@@ -34,16 +34,23 @@ export function CreatePoolForm() {
 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_390px]">
-      <div className="card p-5 md:p-6">
-        <div className="mb-6 flex gap-2">
+      <div className="card p-4 sm:p-5 md:p-6">
+        <div className="mb-5 grid grid-cols-3 gap-2">
           {[0, 1, 2].map((item) => (
-            <div key={item} className={`h-2 flex-1 rounded-full ${item <= step ? "bg-[var(--primary)]" : "bg-white/10"}`} />
+            <button
+              key={item}
+              type="button"
+              onClick={() => setStep(item)}
+              className={`rounded-2xl border px-3 py-2 text-left text-xs font-semibold ${item <= step ? "border-blue-300/25 bg-blue-400/12 text-white" : "border-white/10 bg-white/[0.025] text-[var(--muted)]"}`}
+            >
+              {item === 0 ? "Details" : item === 1 ? "Funding" : "Review"}
+            </button>
           ))}
         </div>
 
         {step === 0 && (
           <div className="space-y-4">
-            <Field label="Pool title" value={form.title} onChange={(value) => update("title", value)} placeholder="Open-source builder sprint" />
+            <Field label="Pool title" value={form.title} onChange={(value) => update("title", value)} placeholder="Open-source builder sprint" error={!form.title ? "A clear pool title is required." : undefined} />
             <label className="block">
               <span className="text-sm font-medium text-white">Description</span>
               <textarea
@@ -58,8 +65,8 @@ export function CreatePoolForm() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <Field label="Target amount in USDC" value={String(form.targetAmount || "")} onChange={(value) => update("targetAmount", Number(value))} placeholder="25000" type="number" />
-            <Field label="Deadline" value={form.deadline} onChange={(value) => update("deadline", value)} type="date" />
+            <Field label="Target amount in USDC" value={String(form.targetAmount || "")} onChange={(value) => update("targetAmount", Number(value))} placeholder="25000" type="number" error={Number(form.targetAmount) <= 0 ? "Enter a USDC target greater than zero." : undefined} />
+            <Field label="Deadline" value={form.deadline} onChange={(value) => update("deadline", value)} type="date" error={form.deadline && new Date(form.deadline).getTime() <= Date.now() ? "Choose a future deadline." : undefined} />
             <label className="block">
               <span className="text-sm font-medium text-white">Category</span>
               <select
@@ -86,12 +93,12 @@ export function CreatePoolForm() {
           </div>
         )}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={() => setStep((value) => Math.max(0, value - 1))}
             disabled={step === 0}
-            className="tap-target inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 font-semibold text-white disabled:opacity-40"
+            className="tap-target inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-4 py-2 font-semibold text-white disabled:opacity-40"
           >
             <ChevronLeft size={18} />
             Back
@@ -100,7 +107,7 @@ export function CreatePoolForm() {
             <button
               type="button"
               onClick={() => setStep((value) => Math.min(2, value + 1))}
-              className="tap-target inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-5 py-2 font-semibold text-white"
+              className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-2 font-semibold text-white"
             >
               Continue
               <ChevronRight size={18} />
@@ -110,7 +117,7 @@ export function CreatePoolForm() {
               type="button"
               onClick={() => setTxState((value) => (value + 1) % txStates.length)}
               disabled={!parsed.success || !isConnected}
-              className="tap-target inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-5 py-2 font-semibold text-white disabled:opacity-45"
+              className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white disabled:opacity-45"
             >
               Create Pool on Arc
             </button>
@@ -119,7 +126,11 @@ export function CreatePoolForm() {
       </div>
 
       <aside className="space-y-4">
-        <div className="card p-5">
+        <div className="card overflow-hidden p-5">
+          <div className="-mx-5 -mt-5 mb-5 flex items-center gap-2 bg-[linear-gradient(90deg,rgba(39,117,202,0.18),rgba(55,213,255,0.08))] px-5 py-4 text-sm font-semibold text-cyan-100">
+            <Sparkles size={17} />
+            Live contributor preview
+          </div>
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--cyan)]">{form.category}</p>
@@ -127,7 +138,7 @@ export function CreatePoolForm() {
             </div>
             <StatusBadge status="active" />
           </div>
-          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{form.description || "Your pool description will appear here for contributors."}</p>
+          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{form.description || "Describe what the USDC pool funds, who maintains it, and how progress will be reported."}</p>
           <div className="mt-5">
             <PoolProgress raised={0} target={Number(form.targetAmount) || 1} />
           </div>
@@ -148,7 +159,7 @@ export function CreatePoolForm() {
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string }) {
+function Field({ label, value, onChange, placeholder, type = "text", error }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; error?: string }) {
   return (
     <label className="block">
       <span className="text-sm font-medium text-white">{label}</span>
@@ -159,6 +170,7 @@ function Field({ label, value, onChange, placeholder, type = "text" }: { label: 
         type={type}
         className="mt-2 h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none placeholder:text-slate-500 focus:border-blue-300/50"
       />
+      {error && <span className="mt-2 block text-xs text-amber-100">{error}</span>}
     </label>
   );
 }

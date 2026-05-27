@@ -1,4 +1,4 @@
-import { AlertTriangle, CircleDollarSign, Network, PlusCircle } from "lucide-react";
+import { CheckCircle2, CircleDollarSign, Network, PlusCircle, Wallet, type LucideIcon } from "lucide-react";
 import { arcTestnet, USDC_TOKEN } from "@arcfundpool/config";
 
 export default function SettingsPage() {
@@ -7,7 +7,11 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-semibold text-white md:text-4xl">Settings and network helper</h1>
       <p className="mt-3 text-[var(--muted)]">Use Arc Testnet for USDC contributions, settlement, refunds, withdrawals, and gas-related wallet messaging.</p>
 
-      <div className="card mt-8 p-5 md:p-6">
+      <div className="card mt-8 overflow-hidden p-5 md:p-6">
+        <div className="-mx-5 -mt-5 mb-6 bg-[linear-gradient(90deg,rgba(39,117,202,0.24),rgba(55,213,255,0.12))] px-5 py-4 md:-mx-6 md:-mt-6 md:px-6">
+          <p className="text-sm font-semibold text-cyan-100">Arc Testnet network helper</p>
+          <p className="mt-1 text-xs text-[var(--muted)]">Use this network for funding, settlement, refunds, withdrawals, and USDC gas.</p>
+        </div>
         <div className="flex items-start gap-4">
           <div className="grid size-12 place-items-center rounded-2xl bg-cyan-300/12 text-cyan-100">
             <Network size={22} />
@@ -18,21 +22,31 @@ export default function SettingsPage() {
           </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Info label="Network name" value={arcTestnet.name} />
+          <Info label="Network" value={arcTestnet.name} />
           <Info label="Chain ID" value={String(arcTestnet.id)} />
           <Info label="Gas token" value="USDC" />
           <Info label="Settlement asset" value={USDC_TOKEN.symbol} />
         </div>
-        <button className="tap-target mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white">
+        <button className="tap-target mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white sm:w-auto">
           <PlusCircle size={18} />
           Add Arc Network
         </button>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <Message title="Wallet disconnected" text="Connect a wallet to create pools, approve USDC, contribute, withdraw, or refund." />
-        <Message title="Wrong network" text="Switch to Arc Testnet before signing transactions." />
-        <Message title="Insufficient USDC" text="Add USDC for both contribution amount and Arc gas-related costs." />
+        <Message icon={Wallet} title="Wallet disconnected" text="Connect a wallet to create pools, approve USDC, contribute, withdraw, or refund." />
+        <Message icon={Network} title="Wrong network" text="Switch to Arc Testnet before signing transactions." />
+        <Message icon={CircleDollarSign} title="Insufficient USDC" text="Add USDC for both contribution amount and Arc gas-related costs." />
+      </div>
+
+      <div className="card mt-6 p-5">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-300" size={20} />
+          <div>
+            <h2 className="font-semibold text-white">Production-facing network copy</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">ArcFundPool currently targets Arc Testnet. USDC is shown consistently as the contribution asset, settlement asset, refund asset, withdrawal asset, and gas token.</p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -47,10 +61,10 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Message({ title, text }: { title: string; text: string }) {
+function Message({ title, text, icon: Icon }: { title: string; text: string; icon: LucideIcon }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
-      <AlertTriangle className="text-amber-200" size={20} />
+      <Icon className="text-amber-200" size={20} />
       <h3 className="mt-3 font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{text}</p>
     </div>
