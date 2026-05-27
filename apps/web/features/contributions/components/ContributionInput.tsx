@@ -75,7 +75,7 @@ export function ContributionInput({
       return;
     }
 
-    if (!config.enabled || !config.contractAddress || !config.usdcAddress) {
+    if (!config.canWrite || !config.contractAddress || !config.usdcAddress) {
       setError(`Contract config is missing: ${config.missing.join(", ")}.`);
       return;
     }
@@ -116,7 +116,7 @@ export function ContributionInput({
       return;
     }
 
-    if (!config.enabled || !config.contractAddress) {
+    if (!config.canWrite || !config.contractAddress) {
       setError(`Contract config is missing: ${config.missing.join(", ")}.`);
       return;
     }
@@ -187,7 +187,7 @@ export function ContributionInput({
         </span>
         <span className="rounded-full bg-white/[0.035] px-3 py-2">Arc gas is paid in USDC</span>
       </div>
-      {!config.enabled && (
+      {!config.canWrite && (
         <p className="flex items-center gap-2 text-sm text-amber-100">
           <AlertCircle size={16} />
           Live contribution requires Arc contract, USDC, RPC, and explorer env config.

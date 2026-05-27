@@ -1,8 +1,8 @@
 import type { Chain } from "viem";
 import { env } from "./env";
 
-const fallbackRpcUrl = "https://rpc.todo.arc-testnet.example";
-const fallbackExplorerUrl = "https://explorer.todo.arc-testnet.example";
+const fallbackRpcUrl = "https://rpc.testnet.arc.network";
+const fallbackExplorerUrl = "https://testnet.arcscan.app";
 
 export const arcTestnet = {
   id: env.arcChainId,
@@ -13,7 +13,7 @@ export const arcTestnet = {
     symbol: "USDC"
   },
   rpcUrls: {
-    // TODO: Set NEXT_PUBLIC_ARC_TESTNET_RPC_URL before enabling live onchain reads.
+    // TODO: Set NEXT_PUBLIC_ARC_RPC_URL before enabling live onchain reads.
     default: { http: [env.arcTestnetRpcUrl || fallbackRpcUrl] },
     public: { http: [env.arcTestnetRpcUrl || fallbackRpcUrl] }
   },

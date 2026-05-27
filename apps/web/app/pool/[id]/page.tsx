@@ -68,7 +68,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    if (!config.enabled || !config.contractAddress) {
+    if (!config.canWrite || !config.contractAddress) {
       setActionError(`Contract config is missing: ${config.missing.join(", ")}.`);
       return;
     }

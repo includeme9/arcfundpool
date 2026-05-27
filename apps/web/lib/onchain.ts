@@ -20,6 +20,9 @@ export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export type OnchainConfig = {
   enabled: boolean;
+  hasContract: boolean;
+  canRead: boolean;
+  canWrite: boolean;
   missing: string[];
   contractAddress?: Address;
   usdcAddress?: Address;
@@ -52,17 +55,24 @@ export function getOnchainConfig(): OnchainConfig {
   const contractAddress = CONTRACTS.arcFundPool.address;
   const usdcAddress = USDC_TOKEN.address;
   const missing: string[] = [];
+  const hasContract = isAddress(contractAddress) && contractAddress !== ZERO_ADDRESS;
+  const hasRpc = Boolean(rpcUrl && !rpcUrl.includes("todo"));
+  const hasUsdc = isAddress(usdcAddress) && usdcAddress !== ZERO_ADDRESS;
+  const hasExplorer = Boolean(explorerUrl && !explorerUrl.includes("todo"));
 
-  if (!rpcUrl || rpcUrl.includes("todo")) missing.push("NEXT_PUBLIC_ARC_TESTNET_RPC_URL");
-  if (!isAddress(contractAddress) || contractAddress === ZERO_ADDRESS) missing.push("NEXT_PUBLIC_ARC_FUND_POOL_ADDRESS");
-  if (!isAddress(usdcAddress) || usdcAddress === ZERO_ADDRESS) missing.push("NEXT_PUBLIC_ARC_USDC_ADDRESS");
-  if (!explorerUrl || explorerUrl.includes("todo")) missing.push("NEXT_PUBLIC_ARC_EXPLORER_URL");
+  if (!hasRpc) missing.push("NEXT_PUBLIC_ARC_RPC_URL");
+  if (!hasContract) missing.push("NEXT_PUBLIC_ARC_FUND_POOL_ADDRESS");
+  if (!hasUsdc) missing.push("NEXT_PUBLIC_ARC_USDC_ADDRESS");
+  if (!hasExplorer) missing.push("NEXT_PUBLIC_ARC_EXPLORER_URL");
 
   return {
-    enabled: missing.length === 0,
+    enabled: hasContract && hasRpc && hasUsdc,
+    hasContract,
+    canRead: hasContract && hasRpc,
+    canWrite: hasContract && hasRpc && hasUsdc,
     missing,
-    contractAddress: isAddress(contractAddress) && contractAddress !== ZERO_ADDRESS ? getAddress(contractAddress) : undefined,
-    usdcAddress: isAddress(usdcAddress) && usdcAddress !== ZERO_ADDRESS ? getAddress(usdcAddress) : undefined,
+    contractAddress: hasContract ? getAddress(contractAddress) : undefined,
+    usdcAddress: hasUsdc ? getAddress(usdcAddress) : undefined,
     rpcUrl,
     explorerUrl,
     chainId: arcTestnet.id,
@@ -72,7 +82,7 @@ export function getOnchainConfig(): OnchainConfig {
 
 export function getPublicClient() {
   const config = getOnchainConfig();
-  if (!config.enabled || !config.rpcUrl) return null;
+  if (!config.canRead || !config.rpcUrl) return null;
   return createPublicClient({
     chain: arcTestnet,
     transport: http(config.rpcUrl)
@@ -111,13 +121,17 @@ export function derivePoolStatus(pool: Pick<FundingPool, "targetAmount" | "total
 export async function loadPoolDataset(): Promise<PoolDataset> {
   const config = getOnchainConfig();
   const client = getPublicClient();
-  if (!config.enabled || !client || !config.contractAddress) {
+  if (!config.hasContract) {
     return {
       pools: fallbackPools,
       contributions: fallbackContributions,
       transactions: fallbackTransactions,
       isFallback: true
     };
+  }
+
+  if (!client || !config.contractAddress) {
+    throw new Error(`Arc Testnet RPC is not configured. Missing: ${config.missing.join(", ")}`);
   }
 
   try {
@@ -172,12 +186,7 @@ export async function loadPoolDataset(): Promise<PoolDataset> {
     };
   } catch (error) {
     console.error("ArcFundPool read failed", error);
-    return {
-      pools: fallbackPools,
-      contributions: fallbackContributions,
-      transactions: fallbackTransactions,
-      isFallback: true
-    };
+    throw error;
   }
 }
 
@@ -248,7 +257,7 @@ export async function loadTransactionEvents(contractAddress: Address, decimals: 
 export async function getContributionAmount(poolId: bigint, contributor?: string) {
   const config = getOnchainConfig();
   const client = getPublicClient();
-  if (!config.enabled || !client || !config.contractAddress || !contributor || !isAddress(contributor)) return 0n;
+  if (!config.canRead || !client || !config.contractAddress || !contributor || !isAddress(contributor)) return 0n;
 
   return client.readContract({
     address: config.contractAddress,
@@ -261,7 +270,7 @@ export async function getContributionAmount(poolId: bigint, contributor?: string
 export async function getUsdcBalanceAndAllowance(owner?: string) {
   const config = getOnchainConfig();
   const client = getPublicClient();
-  if (!config.enabled || !client || !config.usdcAddress || !config.contractAddress || !owner || !isAddress(owner)) {
+  if (!config.canWrite || !client || !config.usdcAddress || !config.contractAddress || !owner || !isAddress(owner)) {
     return { balance: 0n, allowance: 0n };
   }
 
@@ -305,7 +314,7 @@ export function fallbackReceipt(txHash: `0x${string}`): TransactionReceipt {
 export async function loadReceiptFromChain(txHash: `0x${string}`): Promise<TransactionReceipt> {
   const client = getPublicClient();
   const config = getOnchainConfig();
-  if (!config.enabled || !client) return fallbackReceipt(txHash);
+  if (!config.canRead || !client) return fallbackReceipt(txHash);
 
   try {
     const receipt = await client.getTransactionReceipt({ hash: txHash });

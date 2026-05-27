@@ -49,7 +49,7 @@ export function CreatePoolForm() {
       return;
     }
 
-    if (!config.enabled || !config.contractAddress) {
+    if (!config.canWrite || !config.contractAddress) {
       setSubmitError(`Contract config is missing: ${config.missing.join(", ")}.`);
       return;
     }
@@ -161,7 +161,7 @@ export function CreatePoolForm() {
             <Field label="Optional external link" value={form.externalLink ?? ""} onChange={(value) => update("externalLink", value)} placeholder="https://project.example" />
             {!isConnected && <ErrorState message="Connect a wallet before creating a pool on Arc Testnet." />}
             {wrongNetwork && <ErrorState message="Switch your wallet to Arc Testnet before creating a pool." />}
-            {!config.enabled && <ErrorState message={`Live contract config is missing: ${config.missing.join(", ")}. The app will keep using fallback pool data until configured.`} />}
+            {!config.canWrite && <ErrorState message={`Live write config is missing: ${config.missing.join(", ")}.`} />}
             {!parsed.success && (
               <ErrorState message={parsed.error.issues[0]?.message ?? "Review the pool details before creating."} />
             )}

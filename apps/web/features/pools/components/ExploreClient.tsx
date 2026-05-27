@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, WalletCards } from "lucide-react";
+import Link from "next/link";
+import { PlusCircle, Search, WalletCards } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PoolCard } from "@/components/PoolCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -71,7 +72,7 @@ export function ExploreClient() {
       )}
       {isFallback && (
         <p className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
-          Live Arc Testnet contract config is not complete, so cached pool data is shown.
+          ArcFundPool contract address is not configured, so preview pool data is shown.
         </p>
       )}
 
@@ -83,7 +84,16 @@ export function ExploreClient() {
         </div>
       ) : (
         <div className="mt-8">
-          <EmptyState icon={WalletCards} title="No pools found" message="Try another status filter or search term." />
+          <EmptyState
+            icon={isFallback ? WalletCards : PlusCircle}
+            title={isFallback ? "No pools found" : "No funding pools have been created yet."}
+            message={isFallback ? "Try another status filter or search term." : "Create the first Arc Testnet USDC funding pool and it will appear here from onchain state."}
+          />
+          {!isFallback && (
+            <Link href="/create" className="tap-target mx-auto mt-4 flex w-full max-w-xs items-center justify-center rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white">
+              Create the first pool
+            </Link>
+          )}
         </div>
       )}
     </section>

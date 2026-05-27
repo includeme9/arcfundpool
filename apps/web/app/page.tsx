@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, CircleDollarSign, LockKeyhole, ReceiptText, RotateCcw, Smartphone } from "lucide-react";
 import { PoolCard } from "@/components/PoolCard";
-import { pools } from "@/lib/mock-data";
+import type { FundingPool } from "@arcfundpool/types";
 
 const features = [
   { title: "USDC Contributions", text: "Contributors fund pools with USDC, with clear wallet and balance states.", icon: CircleDollarSign },
@@ -11,6 +11,23 @@ const features = [
 ];
 
 const steps = ["Create a pool", "Share the link", "Receive USDC contributions", "Withdraw when funded or refund if failed"];
+
+const previewPool: FundingPool = {
+  id: "preview",
+  chainPoolId: 0n,
+  title: "Example funding pool",
+  description: "A mobile preview of how a transparent Arc Testnet USDC pool appears after it is created onchain.",
+  category: "Community",
+  creatorWallet: "0x0000000000000000000000000000000000000000",
+  targetAmount: 10000,
+  totalRaised: 6400,
+  deadline: "2026-07-20T00:00:00.000Z",
+  metadataURI: "",
+  status: "active",
+  withdrawn: false,
+  cancelled: false,
+  createdAt: "2026-05-20T00:00:00.000Z"
+};
 
 export default function LandingPage() {
   return (
@@ -48,7 +65,7 @@ export default function LandingPage() {
                 </div>
                 <Smartphone className="text-[var(--cyan)]" size={20} />
               </div>
-              <PoolCard pool={pools[0]} />
+              <PoolCard pool={previewPool} />
             </div>
           </div>
         </div>

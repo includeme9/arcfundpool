@@ -2,16 +2,30 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Contribution, FundingPool, PoolTransaction } from "@arcfundpool/types";
-import { loadPoolDataset, type PoolDataset } from "@/lib/onchain";
+import { getOnchainConfig, loadPoolDataset, type PoolDataset } from "@/lib/onchain";
 import { contributions, pools, transactions } from "@/lib/mock-data";
 
-export function usePools() {
-  const [dataset, setDataset] = useState<PoolDataset>({
+function initialDataset(): PoolDataset {
+  const config = getOnchainConfig();
+  if (config.hasContract) {
+    return {
+      pools: [],
+      contributions: [],
+      transactions: [],
+      isFallback: false
+    };
+  }
+
+  return {
     pools,
     contributions,
     transactions,
     isFallback: true
-  });
+  };
+}
+
+export function usePools() {
+  const [dataset, setDataset] = useState<PoolDataset>(initialDataset);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +35,24 @@ export function usePools() {
     try {
       setDataset(await loadPoolDataset());
     } catch {
-      setError("Unable to load Arc Testnet pool data. Showing cached funding pools.");
+      const config = getOnchainConfig();
+      if (config.hasContract) {
+        setDataset({
+          pools: [],
+          contributions: [],
+          transactions: [],
+          isFallback: false
+        });
+        setError("Unable to read Arc Testnet pool data. Check RPC configuration and retry.");
+      } else {
+        setDataset({
+          pools,
+          contributions,
+          transactions,
+          isFallback: true
+        });
+        setError("Unable to load Arc Testnet pool data. Showing preview funding pools.");
+      }
     } finally {
       setIsLoading(false);
     }
