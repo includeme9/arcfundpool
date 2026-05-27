@@ -10,3 +10,12 @@ broadcast
 *.log
 _tmp_*
 *.tsbuildinfo
+.env
+.env.local
+.env.*.local
+apps/contracts/.env
+apps/web/.env.local
+apps/contracts/.env
+apps/web/.env.local
+apps/contracts/cache/
+apps/contracts/broadcast/
