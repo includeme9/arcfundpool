@@ -1,22 +1,99 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { CalendarDays, CircleDollarSign, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
-import { contributions, pools, transactions } from "@/lib/mock-data";
+import { getAddress, type Hash } from "viem";
+import { arcFundPoolAbi } from "@arcfundpool/web3";
 import { AddressPill } from "@/components/AddressPill";
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { PoolProgress } from "@/components/PoolProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 import { TransactionStatus } from "@/components/TransactionStatus";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ContributionInput } from "@/features/contributions/components/ContributionInput";
+import { usePools } from "@/features/pools/hooks/usePools";
+import { useWallet } from "@/features/wallet/hooks/useWallet";
+import { getContributionAmount, getOnchainConfig, getWalletClient, userFacingError, waitForReceipt } from "@/lib/onchain";
 import { daysLeft, formatDate, formatUSDC, shortenAddress } from "@arcfundpool/utils";
 
 export default function PoolDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const pool = pools.find((item) => item.id === id);
-  if (!pool) notFound();
+  const { address, chainId, isConnected } = useWallet();
+  const { pools, contributions, transactions, isLoading, isFallback, refresh } = usePools();
+  const [actionError, setActionError] = useState<string>();
+  const [actionHash, setActionHash] = useState<Hash>();
+  const [refundAmount, setRefundAmount] = useState<bigint>(0n);
+  const config = getOnchainConfig();
+  const pool = pools.find((item) => item.id === id || item.chainPoolId.toString() === id);
 
+  useEffect(() => {
+    async function loadRefundAmount() {
+      if (!pool) return;
+      setRefundAmount(await getContributionAmount(pool.chainPoolId, address));
+    }
+
+    void loadRefundAmount();
+  }, [address, pool]);
+
+  if (isLoading) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <LoadingState label="Loading Arc Testnet pool state" />
+      </section>
+    );
+  }
+
+  if (!pool) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <ErrorState message="Pool not found. Check the pool id or contract configuration." />
+      </section>
+    );
+  }
+
+  const selectedPool = pool;
   const poolContributions = contributions.filter((item) => item.chainPoolId === pool.chainPoolId);
+  const poolTransactions = transactions.filter((item) => item.chainPoolId === undefined || item.chainPoolId === pool.chainPoolId);
   const funded = pool.totalRaised >= pool.targetAmount;
   const refundable = pool.status === "refundable" || pool.cancelled;
+  const isCreator = Boolean(address && address.toLowerCase() === pool.creatorWallet.toLowerCase());
+  const wrongNetwork = isConnected && chainId !== undefined && chainId !== config.chainId;
+
+  async function writePoolAction(kind: "withdraw" | "refund" | "cancelPool") {
+    setActionError(undefined);
+
+    if (!window.ethereum || !address) {
+      setActionError("Connect a wallet before signing transactions.");
+      return;
+    }
+
+    if (!config.enabled || !config.contractAddress) {
+      setActionError(`Contract config is missing: ${config.missing.join(", ")}.`);
+      return;
+    }
+
+    if (wrongNetwork) {
+      setActionError("Switch your wallet to Arc Testnet before signing transactions.");
+      return;
+    }
+
+    try {
+      const walletClient = getWalletClient(window.ethereum);
+      const hash = await walletClient.writeContract({
+        account: getAddress(address),
+        address: config.contractAddress,
+        abi: arcFundPoolAbi,
+        functionName: kind,
+        args: [selectedPool.chainPoolId]
+      });
+      setActionHash(hash);
+      await waitForReceipt(hash);
+      await refresh();
+    } catch (error) {
+      setActionError(userFacingError(error));
+    }
+  }
 
   return (
     <section className="app-container pb-36 pt-8 md:pb-12 md:pt-12">
@@ -58,7 +135,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             <h2 className="text-xl font-semibold text-white">Contribute USDC</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Approve USDC if needed, then contribute to this pool on Arc Testnet.</p>
             <div className="mt-5">
-              <ContributionInput />
+              <ContributionInput poolId={pool.chainPoolId} onSuccess={() => void refresh()} />
             </div>
           </section>
 
@@ -94,7 +171,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
           <section className="card p-5 md:p-6">
             <h2 className="text-xl font-semibold text-white">Transaction history</h2>
             <div className="mt-4 space-y-3">
-              {transactions.map((tx) => (
+              {poolTransactions.map((tx) => (
                 <div key={tx.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="font-semibold capitalize text-white">{tx.kind}</p>
@@ -112,7 +189,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             <h2 className="text-xl font-semibold text-white">Contribute USDC</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Approve USDC if needed, then contribute to this pool on Arc Testnet.</p>
             <div className="mt-5">
-              <ContributionInput />
+              <ContributionInput poolId={pool.chainPoolId} onSuccess={() => void refresh()} />
             </div>
           </div>
           <div className="card border-emerald-300/15 p-5">
@@ -122,10 +199,10 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             </div>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Creator controls are available only when the pool rules allow them.</p>
             <div className="mt-4 grid gap-3">
-              <button disabled={!funded || pool.withdrawn} className="tap-target rounded-full bg-emerald-500 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
+              <button onClick={() => writePoolAction("withdraw")} disabled={!isCreator || !funded || pool.withdrawn || pool.cancelled || isFallback} className="tap-target rounded-full bg-emerald-500 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
                 Withdraw if funded
               </button>
-              <button disabled={pool.status !== "active"} className="tap-target rounded-full border border-white/10 px-5 py-3 font-semibold text-white disabled:opacity-45">
+              <button onClick={() => writePoolAction("cancelPool")} disabled={!isCreator || pool.status !== "active" || isFallback} className="tap-target rounded-full border border-white/10 px-5 py-3 font-semibold text-white disabled:opacity-45">
                 Cancel pool
               </button>
             </div>
@@ -136,7 +213,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
               <h2 className="font-semibold text-white">Contributor actions</h2>
             </div>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Refunds are available when a pool is cancelled or expires below target.</p>
-            <button disabled={!refundable} className="tap-target mt-4 w-full rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
+            <button onClick={() => writePoolAction("refund")} disabled={!refundable || refundAmount === 0n || isFallback} className="tap-target mt-4 w-full rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-45">
               Claim refund
             </button>
           </div>
@@ -147,6 +224,8 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             </div>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Arc Testnet is the network for pool activity. USDC is used for contributions, settlement, refunds, withdrawals, and Arc gas.</p>
           </div>
+          {actionError && <ErrorState message={actionError} />}
+          {actionHash && <p className="break-all rounded-3xl border border-white/10 bg-white/[0.035] p-4 text-xs text-[var(--muted)]">Last transaction: {actionHash}</p>}
         </aside>
       </div>
 

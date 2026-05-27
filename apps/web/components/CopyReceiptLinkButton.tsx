@@ -1,7 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CopyButton } from "@/components/CopyButton";
 
 export function CopyReceiptLinkButton() {
-  return <CopyButton value={window.location.href} label="Copy receipt link" />;
+  const [href, setHref] = useState("");
+
+  useEffect(() => {
+    setHref(window.location.href);
+  }, []);
+
+  return <CopyButton value={href} label="Copy receipt link" />;
 }

@@ -1,13 +1,28 @@
+"use client";
+
 import { ReceiptText, RotateCcw, WalletCards } from "lucide-react";
-import { contributions, pools } from "@/lib/mock-data";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
+import { LoadingState } from "@/components/LoadingState";
+import { usePools } from "@/features/pools/hooks/usePools";
+import { useWallet } from "@/features/wallet/hooks/useWallet";
 import { formatDate, formatUSDC, shortenAddress } from "@arcfundpool/utils";
 
 export default function ContributorPage() {
+  const { address } = useWallet();
+  const { contributions: allContributions, pools, isFallback, isLoading } = usePools();
+  const contributions = isFallback || !address ? allContributions : allContributions.filter((item) => item.contributorWallet.toLowerCase() === address.toLowerCase());
   const total = contributions.reduce((sum, item) => sum + item.amount, 0);
   const refundablePoolIds = new Set(pools.filter((pool) => pool.status === "refundable").map((pool) => pool.chainPoolId.toString()));
   const refundable = contributions.filter((item) => refundablePoolIds.has(item.chainPoolId.toString())).reduce((sum, item) => sum + item.amount, 0);
+
+  if (isLoading) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <LoadingState label="Loading contributor activity" />
+      </section>
+    );
+  }
 
   return (
     <section className="app-container py-8 md:py-12">

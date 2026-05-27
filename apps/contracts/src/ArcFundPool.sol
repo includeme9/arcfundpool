@@ -45,6 +45,10 @@ contract ArcFundPool {
         usdc = IERC20(usdcAddress);
     }
 
+    function poolCount() external view returns (uint256) {
+        return nextPoolId;
+    }
+
     function createPool(
         string calldata title,
         string calldata metadataURI,

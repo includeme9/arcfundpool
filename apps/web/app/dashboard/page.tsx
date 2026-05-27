@@ -1,15 +1,31 @@
+"use client";
+
 import { Activity, CircleDollarSign, Layers3, PlusCircle, ReceiptText, Trophy } from "lucide-react";
-import { pools, contributions } from "@/lib/mock-data";
 import { PoolCard } from "@/components/PoolCard";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
+import { LoadingState } from "@/components/LoadingState";
+import { usePools } from "@/features/pools/hooks/usePools";
+import { useWallet } from "@/features/wallet/hooks/useWallet";
 import { formatDate, formatUSDC, shortenAddress } from "@arcfundpool/utils";
 
 export default function DashboardPage() {
+  const { address } = useWallet();
+  const { pools: allPools, contributions, isFallback, isLoading } = usePools();
+  const pools = isFallback || !address ? allPools : allPools.filter((pool) => pool.creatorWallet.toLowerCase() === address.toLowerCase());
   const active = pools.filter((pool) => pool.status === "active").length;
   const funded = pools.filter((pool) => pool.status === "funded").length;
   const withdrawn = pools.filter((pool) => pool.status === "withdrawn").length;
   const totalRaised = pools.reduce((sum, pool) => sum + pool.totalRaised, 0);
+  const visibleContributions = contributions.filter((item) => pools.some((pool) => pool.chainPoolId === item.chainPoolId));
+
+  if (isLoading) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <LoadingState label="Loading creator pool activity" />
+      </section>
+    );
+  }
 
   return (
     <section className="app-container py-8 md:py-12">
@@ -42,9 +58,9 @@ export default function DashboardPage() {
         </section>
         <aside className="card p-5">
           <h2 className="text-xl font-semibold text-white">Recent contributions</h2>
-          {contributions.length ? (
+          {visibleContributions.length ? (
             <div className="mt-4 space-y-3">
-              {contributions.map((item) => (
+              {visibleContributions.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                   <p className="font-semibold text-white">{formatUSDC(item.amount)}</p>
                   <p className="mt-1 text-sm text-[var(--muted)]">{shortenAddress(item.contributorWallet)} · {formatDate(item.timestamp)}</p>

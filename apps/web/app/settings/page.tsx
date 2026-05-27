@@ -1,5 +1,6 @@
-import { CheckCircle2, CircleDollarSign, Network, PlusCircle, Wallet, type LucideIcon } from "lucide-react";
+import { CheckCircle2, CircleDollarSign, Network, Wallet, type LucideIcon } from "lucide-react";
 import { arcTestnet, USDC_TOKEN } from "@arcfundpool/config";
+import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 
 export default function SettingsPage() {
   return (
@@ -27,10 +28,7 @@ export default function SettingsPage() {
           <Info label="Gas token" value="USDC" />
           <Info label="Settlement asset" value={USDC_TOKEN.symbol} />
         </div>
-        <button className="tap-target mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white sm:w-auto">
-          <PlusCircle size={18} />
-          Add Arc Network
-        </button>
+        <AddArcNetworkButton />
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">

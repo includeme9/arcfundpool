@@ -4,6 +4,8 @@ import { Search, WalletCards } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PoolCard } from "@/components/PoolCard";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { filterPools, type PoolFilter } from "@/features/pools/utils/filterPools";
 import { usePools } from "@/features/pools/hooks/usePools";
 import { cn } from "@/lib/cn";
@@ -17,7 +19,7 @@ const filters: { label: string; value: PoolFilter }[] = [
 ];
 
 export function ExploreClient() {
-  const { data } = usePools();
+  const { data, isFallback, isLoading, error } = usePools();
   const [filter, setFilter] = useState<PoolFilter>("all");
   const [query, setQuery] = useState("");
   const visiblePools = useMemo(() => filterPools(data, filter, query), [data, filter, query]);
@@ -57,7 +59,23 @@ export function ExploreClient() {
         ))}
       </div>
 
-      {visiblePools.length ? (
+      {isLoading && (
+        <div className="mt-6">
+          <LoadingState label="Loading Arc Testnet pools" />
+        </div>
+      )}
+      {error && (
+        <div className="mt-6">
+          <ErrorState message={error} />
+        </div>
+      )}
+      {isFallback && (
+        <p className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
+          Live Arc Testnet contract config is not complete, so cached pool data is shown.
+        </p>
+      )}
+
+      {!isLoading && visiblePools.length ? (
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visiblePools.map((pool) => (
             <PoolCard key={pool.id} pool={pool} />

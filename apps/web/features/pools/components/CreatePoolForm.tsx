@@ -4,10 +4,13 @@ import { useMemo, useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, XCircle } from "lucide-react";
 import { POOL_CATEGORIES } from "@arcfundpool/config";
 import { createPoolSchema, type CreatePoolInput } from "@arcfundpool/validation";
+import { arcFundPoolAbi } from "@arcfundpool/web3";
+import { decodeEventLog, getAddress, type Hash } from "viem";
 import { PoolProgress } from "@/components/PoolProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ErrorState } from "@/components/ErrorState";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
+import { getOnchainConfig, getWalletClient, parseUSDCAmount, userFacingError, waitForReceipt } from "@/lib/onchain";
 
 const initialForm: CreatePoolInput = {
   title: "",
@@ -22,14 +25,84 @@ const initialForm: CreatePoolInput = {
 const txStates = ["Waiting for wallet confirmation", "Creating pool", "Pool created successfully", "Failed transaction"];
 
 export function CreatePoolForm() {
-  const { isConnected } = useWallet();
+  const { address, chainId, connect, isConnected } = useWallet();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CreatePoolInput>(initialForm);
   const [txState, setTxState] = useState(0);
+  const [txHash, setTxHash] = useState<Hash>();
+  const [createdPoolUrl, setCreatedPoolUrl] = useState<string>();
+  const [submitError, setSubmitError] = useState<string>();
   const parsed = useMemo(() => createPoolSchema.safeParse(form), [form]);
+  const config = getOnchainConfig();
+  const wrongNetwork = isConnected && chainId !== undefined && chainId !== config.chainId;
 
   function update<K extends keyof CreatePoolInput>(key: K, value: CreatePoolInput[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function submitCreatePool() {
+    setSubmitError(undefined);
+    setCreatedPoolUrl(undefined);
+
+    if (!isConnected) {
+      await connect();
+      return;
+    }
+
+    if (!config.enabled || !config.contractAddress) {
+      setSubmitError(`Contract config is missing: ${config.missing.join(", ")}.`);
+      return;
+    }
+
+    if (wrongNetwork) {
+      setSubmitError("Switch your wallet to Arc Testnet before creating a pool.");
+      return;
+    }
+
+    if (!parsed.success) {
+      setSubmitError(parsed.error.issues[0]?.message ?? "Review the pool details before creating.");
+      return;
+    }
+
+    if (!window.ethereum || !address) {
+      setSubmitError("Connect a wallet before creating a pool on Arc Testnet.");
+      return;
+    }
+
+    try {
+      setTxState(0);
+      const walletClient = getWalletClient(window.ethereum);
+      const deadline = BigInt(Math.floor(new Date(parsed.data.deadline).getTime() / 1000));
+      const metadataURI = parsed.data.externalLink || parsed.data.imageUrl || "";
+      const hash = await walletClient.writeContract({
+        account: getAddress(address),
+        address: config.contractAddress,
+        abi: arcFundPoolAbi,
+        functionName: "createPool",
+        args: [parsed.data.title, metadataURI, parseUSDCAmount(String(parsed.data.targetAmount), config.usdcDecimals), deadline]
+      });
+
+      setTxHash(hash);
+      setTxState(1);
+      const receipt = await waitForReceipt(hash);
+      setTxState(receipt.status === "success" ? 2 : 3);
+
+      const createdLog = receipt.logs
+        .map((log) => {
+          try {
+            return decodeEventLog({ abi: arcFundPoolAbi, data: log.data, topics: log.topics });
+          } catch {
+            return null;
+          }
+        })
+        .find((log) => log?.eventName === "PoolCreated");
+
+      const poolId = createdLog?.eventName === "PoolCreated" ? createdLog.args.poolId : undefined;
+      setCreatedPoolUrl(poolId !== undefined ? `/pool/${poolId.toString()}` : "/explore");
+    } catch (error) {
+      setTxState(3);
+      setSubmitError(userFacingError(error));
+    }
   }
 
   return (
@@ -87,9 +160,18 @@ export function CreatePoolForm() {
             <Field label="Optional image URL" value={form.imageUrl ?? ""} onChange={(value) => update("imageUrl", value)} placeholder="https://..." />
             <Field label="Optional external link" value={form.externalLink ?? ""} onChange={(value) => update("externalLink", value)} placeholder="https://project.example" />
             {!isConnected && <ErrorState message="Connect a wallet before creating a pool on Arc Testnet." />}
+            {wrongNetwork && <ErrorState message="Switch your wallet to Arc Testnet before creating a pool." />}
+            {!config.enabled && <ErrorState message={`Live contract config is missing: ${config.missing.join(", ")}. The app will keep using fallback pool data until configured.`} />}
             {!parsed.success && (
               <ErrorState message={parsed.error.issues[0]?.message ?? "Review the pool details before creating."} />
             )}
+            {submitError && <ErrorState message={submitError} />}
+            {createdPoolUrl && (
+              <a href={createdPoolUrl} className="tap-target flex items-center justify-center rounded-full bg-emerald-400 px-5 py-3 font-semibold text-slate-950">
+                View created pool
+              </a>
+            )}
+            {txHash && <p className="break-all text-xs text-[var(--muted)]">Transaction: {txHash}</p>}
           </div>
         )}
 
@@ -115,8 +197,8 @@ export function CreatePoolForm() {
           ) : (
             <button
               type="button"
-              onClick={() => setTxState((value) => (value + 1) % txStates.length)}
-              disabled={!parsed.success || !isConnected}
+              onClick={submitCreatePool}
+              disabled={!parsed.success}
               className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white disabled:opacity-45"
             >
               Create Pool on Arc

@@ -3,7 +3,7 @@ import type { Contribution, FundingPool, PoolTransaction, TransactionReceipt } f
 export const pools: FundingPool[] = [
   {
     id: "open-indexer",
-    chainPoolId: 1n,
+    chainPoolId: 0n,
     title: "Open Arc Indexer Toolkit",
     description: "A shared indexing toolkit for builders shipping transparent funding, receipts, and analytics on Arc.",
     category: "Open Source",
@@ -20,7 +20,7 @@ export const pools: FundingPool[] = [
   },
   {
     id: "community-hacknight",
-    chainPoolId: 2n,
+    chainPoolId: 1n,
     title: "Arc Community Hacknight",
     description: "Venue, food, builder prizes, and livestream costs for a stablecoin-native builder night.",
     category: "Events",
@@ -36,7 +36,7 @@ export const pools: FundingPool[] = [
   },
   {
     id: "auditor-bounty",
-    chainPoolId: 3n,
+    chainPoolId: 2n,
     title: "Stable Pool Audit Bounty",
     description: "A collective bounty for security review of community-maintained Arc USDC pool contracts.",
     category: "Bounties",
@@ -52,7 +52,7 @@ export const pools: FundingPool[] = [
   },
   {
     id: "builder-os",
-    chainPoolId: 4n,
+    chainPoolId: 3n,
     title: "Builder OS Grants Sprint",
     description: "A focused funding pool for small teams building primitives that improve Arc onboarding.",
     category: "Teams",
@@ -71,7 +71,7 @@ export const pools: FundingPool[] = [
 export const contributions: Contribution[] = [
   {
     id: "c1",
-    chainPoolId: 1n,
+    chainPoolId: 0n,
     txHash: "0x9eac4f11b83714b659bba9fffd212e5a1c7f021e7dfb8db76df778a2b5510a01",
     contributorWallet: "0xA781B7f401B48178d8a12e5d77Dd8bD550Ac77d1",
     amount: 2500,
@@ -79,7 +79,7 @@ export const contributions: Contribution[] = [
   },
   {
     id: "c2",
-    chainPoolId: 1n,
+    chainPoolId: 0n,
     txHash: "0x5e09bb3f613c0b574352becc75361e169adfd81acd189d5f0f0e547f581a31bf",
     contributorWallet: "0xE4E5A60219B02c17A2E56c75B6f59acC99c9BeF4",
     amount: 6140,
@@ -87,7 +87,7 @@ export const contributions: Contribution[] = [
   },
   {
     id: "c3",
-    chainPoolId: 2n,
+    chainPoolId: 1n,
     txHash: "0x34c617a9f41e19ef87bd84f751ac827bafcbdb034237e311af609e6c80021acf",
     contributorWallet: "0x71c6B3Ef6eD563dAF3115E12b4F911205cbDaC13",
     amount: 9000,

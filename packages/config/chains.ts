@@ -1,23 +1,27 @@
 import type { Chain } from "viem";
+import { env } from "./env";
+
+const fallbackRpcUrl = "https://rpc.todo.arc-testnet.example";
+const fallbackExplorerUrl = "https://explorer.todo.arc-testnet.example";
 
 export const arcTestnet = {
-  id: 5042002,
+  id: env.arcChainId,
   name: "Arc Testnet",
   nativeCurrency: {
     decimals: 6,
     name: "USDC",
     symbol: "USDC"
   },
-  // TODO: Replace with the official Arc Testnet RPC URL before deployment.
   rpcUrls: {
-    default: { http: ["https://rpc.todo.arc-testnet.example"] },
-    public: { http: ["https://rpc.todo.arc-testnet.example"] }
+    // TODO: Set NEXT_PUBLIC_ARC_TESTNET_RPC_URL before enabling live onchain reads.
+    default: { http: [env.arcTestnetRpcUrl || fallbackRpcUrl] },
+    public: { http: [env.arcTestnetRpcUrl || fallbackRpcUrl] }
   },
   blockExplorers: {
     default: {
       name: "Arc Explorer",
-      // TODO: Replace with the official Arc Testnet explorer URL.
-      url: "https://explorer.todo.arc-testnet.example"
+      // TODO: Set NEXT_PUBLIC_ARC_EXPLORER_URL before deployment.
+      url: env.arcExplorerUrl || fallbackExplorerUrl
     }
   },
   testnet: true
