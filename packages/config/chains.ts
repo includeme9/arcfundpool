@@ -8,7 +8,7 @@ export const arcTestnet = {
   id: env.arcChainId,
   name: "Arc Testnet",
   nativeCurrency: {
-    decimals: 6,
+    decimals: 18,
     name: "USDC",
     symbol: "USDC"
   },

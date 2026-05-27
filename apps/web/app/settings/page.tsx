@@ -27,15 +27,16 @@ export default function SettingsPage() {
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Info label="Mode" value={config.hasContract ? "Onchain mode" : "Fallback preview mode"} />
-          <Info label="Network" value={arcTestnet.name} />
-          <Info label="Chain ID" value={String(arcTestnet.id)} />
+          <Info label="Network" value="Arc Testnet" />
+          <Info label="Chain ID" value="5042002" />
+          <Info label="RPC" value="https://rpc.testnet.arc.network" />
+          <Info label="Explorer" value="https://testnet.arcscan.app" />
           <Info label="Gas token" value="USDC" />
           <Info label="Settlement asset" value={USDC_TOKEN.symbol} />
           <Info label="ArcFundPool contract" value={CONTRACTS.arcFundPool.address} />
           <Info label="USDC address" value={USDC_TOKEN.address} />
-          <Info label="Explorer URL" value={arcTestnet.blockExplorers?.default.url ?? "Not configured"} />
         </div>
-        <AddArcNetworkButton />
+        <AddArcNetworkButton className="mt-6" label="Add / Switch to Arc Testnet" />
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">

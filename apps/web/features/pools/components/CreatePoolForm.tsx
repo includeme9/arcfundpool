@@ -9,6 +9,7 @@ import { decodeEventLog, getAddress, type Hash } from "viem";
 import { PoolProgress } from "@/components/PoolProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ErrorState } from "@/components/ErrorState";
+import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
 import { getOnchainConfig, getWalletClient, parseUSDCAmount, userFacingError, waitForReceipt } from "@/lib/onchain";
 
@@ -160,7 +161,12 @@ export function CreatePoolForm() {
             <Field label="Optional image URL" value={form.imageUrl ?? ""} onChange={(value) => update("imageUrl", value)} placeholder="https://..." />
             <Field label="Optional external link" value={form.externalLink ?? ""} onChange={(value) => update("externalLink", value)} placeholder="https://project.example" />
             {!isConnected && <ErrorState message="Connect a wallet before creating a pool on Arc Testnet." />}
-            {wrongNetwork && <ErrorState message="Switch your wallet to Arc Testnet before creating a pool." />}
+            {wrongNetwork && (
+              <div className="space-y-3 rounded-3xl border border-amber-300/20 bg-amber-300/10 p-4">
+                <ErrorState message="Switch your wallet to Arc Testnet before creating a pool." />
+                <AddArcNetworkButton label="Add / Switch to Arc Testnet" />
+              </div>
+            )}
             {!config.canWrite && <ErrorState message={`Live write config is missing: ${config.missing.join(", ")}.`} />}
             {!parsed.success && (
               <ErrorState message={parsed.error.issues[0]?.message ?? "Review the pool details before creating."} />
@@ -198,7 +204,7 @@ export function CreatePoolForm() {
             <button
               type="button"
               onClick={submitCreatePool}
-              disabled={!parsed.success}
+              disabled={!parsed.success || wrongNetwork}
               className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white disabled:opacity-45"
             >
               Create Pool on Arc
