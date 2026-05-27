@@ -19,7 +19,7 @@ import { daysLeft, formatDate, formatUSDC, shortenAddress } from "@arcfundpool/u
 
 export default function PoolDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const { address, chainId, isConnected } = useWallet();
+  const { address, chainId, isConnected, provider } = useWallet();
   const { pools, contributions, transactions, isLoading, isFallback, refresh } = usePools();
   const [actionError, setActionError] = useState<string>();
   const [actionHash, setActionHash] = useState<Hash>();
@@ -63,7 +63,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
   async function writePoolAction(kind: "withdraw" | "refund" | "cancelPool") {
     setActionError(undefined);
 
-    if (!window.ethereum || !address) {
+    if (!provider || !address) {
       setActionError("Connect a wallet before signing transactions.");
       return;
     }
@@ -79,7 +79,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
     }
 
     try {
-      const walletClient = getWalletClient(window.ethereum);
+      const walletClient = getWalletClient(provider);
       const hash = await walletClient.writeContract({
         account: getAddress(address),
         address: config.contractAddress,

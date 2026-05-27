@@ -26,7 +26,7 @@ const initialForm: CreatePoolInput = {
 const txStates = ["Waiting for wallet confirmation", "Creating pool", "Pool created successfully", "Failed transaction"];
 
 export function CreatePoolForm() {
-  const { address, chainId, connect, isConnected } = useWallet();
+  const { address, chainId, connect, isConnected, provider } = useWallet();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CreatePoolInput>(initialForm);
   const [txState, setTxState] = useState(0);
@@ -65,14 +65,14 @@ export function CreatePoolForm() {
       return;
     }
 
-    if (!window.ethereum || !address) {
+    if (!provider || !address) {
       setSubmitError("Connect a wallet before creating a pool on Arc Testnet.");
       return;
     }
 
     try {
       setTxState(0);
-      const walletClient = getWalletClient(window.ethereum);
+      const walletClient = getWalletClient(provider);
       const deadline = BigInt(Math.floor(new Date(parsed.data.deadline).getTime() / 1000));
       const metadataURI = parsed.data.externalLink || parsed.data.imageUrl || "";
       const hash = await walletClient.writeContract({

@@ -38,7 +38,7 @@ export function ContributionInput({
   poolId?: bigint;
   onSuccess?: (txHash: Hash) => void;
 }) {
-  const { address, chainId, connect, isConnected } = useWallet();
+  const { address, chainId, connect, isConnected, provider } = useWallet();
   const [amount, setAmount] = useState(defaultAmount);
   const [txStep, setTxStep] = useState<TxStep>("approvalRequired");
   const [balance, setBalance] = useState<bigint>(0n);
@@ -85,11 +85,11 @@ export function ContributionInput({
       return;
     }
 
-    if (!window.ethereum || !address || !parsed.success) return;
+    if (!provider || !address || !parsed.success) return;
 
     try {
       setTxStep("approving");
-      const walletClient = getWalletClient(window.ethereum);
+      const walletClient = getWalletClient(provider);
       const hash = await walletClient.writeContract({
         account: getAddress(address),
         address: config.usdcAddress,
@@ -142,11 +142,11 @@ export function ContributionInput({
       return;
     }
 
-    if (!window.ethereum || !address || !parsed.success) return;
+    if (!provider || !address || !parsed.success) return;
 
     try {
       setTxStep("wallet");
-      const walletClient = getWalletClient(window.ethereum);
+      const walletClient = getWalletClient(provider);
       const hash = await walletClient.writeContract({
         account: getAddress(address),
         address: config.contractAddress,

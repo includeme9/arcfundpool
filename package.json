@@ -10,6 +10,11 @@
     "lint": "pnpm --filter @arcfundpool/web lint",
     "typecheck": "pnpm --filter @arcfundpool/web typecheck"
   },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@reown/appkit"
+    ]
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }
