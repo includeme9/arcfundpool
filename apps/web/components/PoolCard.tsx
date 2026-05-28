@@ -5,7 +5,7 @@ import { daysLeft, formatUSDC, shortenAddress } from "@arcfundpool/utils";
 import { PoolProgress } from "@/components/PoolProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 
-export function PoolCard({ pool, href }: { pool: FundingPool; href?: string | false }) {
+export function PoolCard({ pool, href, recordLabel = "Onchain" }: { pool: FundingPool; href?: string | false; recordLabel?: string }) {
   const content = (
     <>
       <div className="mb-4 h-1 rounded-full bg-[linear-gradient(90deg,var(--primary),var(--cyan),var(--violet))] opacity-80" />
@@ -35,7 +35,7 @@ export function PoolCard({ pool, href }: { pool: FundingPool; href?: string | fa
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.035] px-2.5 py-1 text-cyan-100">
           <ShieldCheck size={14} />
-          Onchain
+          {recordLabel}
         </span>
       </div>
     </>

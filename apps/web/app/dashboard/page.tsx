@@ -75,7 +75,7 @@ export default function DashboardPage() {
               {visibleContributions.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
                   <p className="font-semibold text-white">{formatUSDC(item.amount)}</p>
-                  <p className="mt-1 text-sm text-[var(--muted)]">{shortenAddress(item.contributorWallet)} · {formatDate(item.timestamp)}</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">{shortenAddress(item.contributorWallet)} / {formatDate(item.timestamp)}</p>
                 </div>
               ))}
             </div>

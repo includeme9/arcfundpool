@@ -1,6 +1,7 @@
 import { CheckCircle2, CircleDollarSign, Droplets, Network, Wallet, type LucideIcon } from "lucide-react";
 import { arcTestnet, CONTRACTS, USDC_TOKEN } from "@arcfundpool/config";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
+import { CopyButton } from "@/components/CopyButton";
 import { SettingsDiagnostics } from "@/features/network/components/SettingsDiagnostics";
 import { SettingsWalletConnectAction } from "@/features/wallet/components/SettingsWalletConnectAction";
 import { getOnchainConfig } from "@/lib/onchain";
@@ -13,12 +14,9 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-semibold text-white md:text-4xl">Settings and network helper</h1>
       <p className="mt-3 text-[var(--muted)]">Use Arc Testnet for USDC contributions, settlement, refunds, withdrawals, and gas-related wallet messaging.</p>
 
-      <div className="card mt-8 overflow-hidden p-5 md:p-6">
-        <div className="-mx-5 -mt-5 mb-6 bg-[linear-gradient(90deg,rgba(39,117,202,0.24),rgba(55,213,255,0.12))] px-5 py-4 md:-mx-6 md:-mt-6 md:px-6">
-          <p className="text-sm font-semibold text-cyan-100">Arc Testnet network helper</p>
-          <p className="mt-1 text-xs text-[var(--muted)]">Use this network for funding, settlement, refunds, withdrawals, and USDC gas.</p>
-        </div>
-        <div className="flex items-start gap-4">
+      <div className="mt-8 grid gap-5">
+        <Section title="Network status" description="Use Arc Testnet for funding, settlement, refunds, withdrawals, and USDC gas.">
+          <div className="flex items-start gap-4">
           <div className="grid size-12 place-items-center rounded-2xl bg-cyan-300/12 text-cyan-100">
             <Network size={22} />
           </div>
@@ -26,8 +24,8 @@ export default function SettingsPage() {
             <h2 className="text-xl font-semibold text-white">Arc Testnet</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Add Arc Testnet to your wallet before creating or contributing to pools.</p>
           </div>
-        </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Info label="Mode" value={config.hasContract ? "Onchain mode" : "Fallback preview mode"} />
           <Info label="Network" value="Arc Testnet" />
           <Info label="Chain ID" value={String(arcTestnet.id)} />
@@ -35,40 +33,48 @@ export default function SettingsPage() {
           <Info label="Explorer" value={config.explorerUrl || "https://testnet.arcscan.app"} />
           <Info label="Gas token" value="USDC" />
           <Info label="Settlement asset" value={USDC_TOKEN.symbol} />
+          </div>
+          <AddArcNetworkButton className="mt-5" label="Add / Switch to Arc Testnet" />
+        </Section>
+
+        <Section title="Contract configuration" description="Financial state is read from Arc Testnet. Supabase and metadata are only supporting layers.">
+          <div className="grid gap-3 md:grid-cols-2">
           <Info label="ArcFundPool contract" value={CONTRACTS.arcFundPool.address} />
           <Info label="USDC address" value={USDC_TOKEN.address} />
-          <SettingsDiagnostics />
-        </div>
-        <AddArcNetworkButton className="mt-6" label="Add / Switch to Arc Testnet" />
-        <SettingsWalletConnectAction />
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <CopyButton value={CONTRACTS.arcFundPool.address} label="Copy contract" />
+            <CopyButton value={USDC_TOKEN.address} label="Copy USDC address" />
+          </div>
+        </Section>
+
+        <Section title="Wallet status" description="Connect a wallet to create pools, contribute USDC, withdraw, or claim refunds.">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <SettingsDiagnostics />
+          </div>
+          <SettingsWalletConnectAction />
+        </Section>
+
+        <Section title="Need Arc Testnet USDC?" description="Use Circle Faucet to request testnet USDC for Arc gas and pool transactions.">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">Select Arc Testnet, choose USDC, and paste your wallet address.</p>
+            <a
+              href="https://faucet.circle.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tap-target inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,var(--primary),var(--cyan))] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/20 sm:w-auto"
+            >
+              <Droplets size={17} />
+              Get Testnet USDC
+            </a>
+          </div>
+        </Section>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <Message icon={Wallet} title="Wallet disconnected" text="Connect a wallet to create pools, approve USDC, contribute, withdraw, or refund." />
         <Message icon={Network} title="Wrong network" text="Switch to Arc Testnet before signing transactions." />
         <Message icon={CircleDollarSign} title="Insufficient USDC" text="Add USDC for both contribution amount and Arc gas-related costs." />
-      </div>
-
-      <div className="card mt-6 p-5">
-        <div className="flex items-start gap-3">
-          <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-blue-400/12 text-[var(--primary-strong)]">
-            <Droplets size={19} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-semibold text-white">Need Arc Testnet USDC?</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              Use the Circle Faucet to request testnet USDC for Arc gas and pool transactions. Select Arc Testnet, choose USDC, and paste your wallet address.
-            </p>
-            <a
-              href="https://faucet.circle.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tap-target mt-4 inline-flex w-full items-center justify-center rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
-            >
-              Get Testnet USDC
-            </a>
-          </div>
-        </div>
       </div>
 
       <div className="card mt-6 p-5">
@@ -83,6 +89,18 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+    </section>
+  );
+}
+
+function Section({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+  return (
+    <section className="card p-5 md:p-6">
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
+        <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{description}</p>
+      </div>
+      {children}
     </section>
   );
 }

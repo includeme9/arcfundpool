@@ -18,9 +18,9 @@ export function progressPercent(raised: number | null | undefined, target: numbe
 export function formatNumber(value: number | null | undefined, maximumFractionDigits = 2) {
   const safeValue = safeNumber(value);
   const fixed = safeValue.toFixed(maximumFractionDigits);
-  const trimmed = fixed.replace(/\.?0+$/, "");
-  if (!trimmed || trimmed === "-") return "0";
-  const [whole, fraction] = trimmed.split(".");
+  const [whole, rawFraction] = fixed.split(".");
+  const fraction = rawFraction?.replace(/0+$/, "");
+  if (!whole || whole === "-") return "0";
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return fraction ? `${grouped}.${fraction}` : grouped;
 }

@@ -19,8 +19,8 @@ const previewPool: FundingPool = {
   description: "A mobile preview of how a transparent Arc Testnet USDC pool appears after it is created onchain.",
   category: "Community",
   creatorWallet: "0x0000000000000000000000000000000000000000",
-  targetAmount: 10000,
-  totalRaised: 6400,
+  targetAmount: 100,
+  totalRaised: 64,
   deadline: "2026-07-20T00:00:00.000Z",
   metadataURI: "",
   status: "active",
@@ -65,7 +65,7 @@ export default function LandingPage() {
                 </div>
                 <Smartphone className="text-[var(--cyan)]" size={20} />
               </div>
-              <PoolCard pool={previewPool} href="/explore" />
+              <PoolCard pool={previewPool} href="/explore" recordLabel="Preview" />
             </div>
           </div>
         </div>
