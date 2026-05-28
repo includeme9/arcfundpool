@@ -6,7 +6,7 @@ import { AddArcNetworkButton } from "@/features/network/components/AddArcNetwork
 import { useWallet } from "@/features/wallet/hooks/useWallet";
 
 export function CreateWalletStatus() {
-  const { address, connect, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect } = useWallet();
+  const { address, connect, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect, clearWalletError } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
 
   if (!isConnected) {
@@ -19,7 +19,10 @@ export function CreateWalletStatus() {
             <p className="mt-1 text-sm leading-6 text-slate-200">Use an injected wallet or WalletConnect to create your funding pool on Arc Testnet.</p>
             <button
               type="button"
-              onClick={connect}
+              onClick={() => {
+                clearWalletError();
+                void connect();
+              }}
               disabled={!canConnect || isConnecting}
               className="tap-target mt-4 inline-flex w-full items-center justify-center rounded-full bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
             >

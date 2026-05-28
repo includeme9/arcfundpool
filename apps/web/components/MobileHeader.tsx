@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { AlertTriangle, Wallet } from "lucide-react";
-import { shortenAddress } from "@arcfundpool/utils";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
+import { WalletMenu } from "@/features/wallet/components/WalletMenu";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
 
 export function MobileHeader() {
-  const { address, connect, isArcTestnet, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect } = useWallet();
+  const { connect, isArcTestnet, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect, clearWalletError } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
   const subtitle = !isConnected ? "Connect wallet" : isArcTestnet ? "Arc Testnet USDC" : "Wrong network";
 
@@ -28,7 +28,10 @@ export function MobileHeader() {
           {!isConnected && (
             <button
               type="button"
-              onClick={connect}
+              onClick={() => {
+                clearWalletError();
+                void connect();
+              }}
               disabled={!canConnect || isConnecting}
               className="tap-target inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
             >
@@ -52,9 +55,7 @@ export function MobileHeader() {
               <span className="rounded-full border border-cyan-300/18 bg-cyan-300/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-cyan-100">
                 Arc Testnet / USDC gas
               </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1.5 text-[11px] font-semibold text-white">
-                {shortenAddress(address)}
-              </span>
+              <WalletMenu compact />
             </div>
           )}
         </div>

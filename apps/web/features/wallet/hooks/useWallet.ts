@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useChainId, useConnectorClient, useDisconnect, useSwitchChain } from "wagmi";
 import { env } from "@arcfundpool/config";
@@ -36,7 +36,7 @@ export function useWallet() {
   const account = useAccount();
   const activeChainId = useChainId();
   const { data: connectorClient } = useConnectorClient();
-  const { disconnect } = useDisconnect();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
   const { switchChainAsync } = useSwitchChain();
   const { openConnectModal } = useConnectModal();
   const [walletError, setWalletError] = useState<string>();
@@ -58,6 +58,12 @@ export function useWallet() {
   const isWrongNetwork = isConnected && !isArcTestnet;
   const hasInjectedWallet = typeof window !== "undefined" && Boolean(window.ethereum);
   const hasWalletConnect = Boolean(env.walletConnectProjectId);
+
+  useEffect(() => {
+    if (account.status === "connected" || account.status === "disconnected") {
+      setWalletError(undefined);
+    }
+  }, [account.status, address]);
 
   async function connect() {
     setWalletError(undefined);
@@ -112,6 +118,15 @@ export function useWallet() {
     return result;
   }
 
+  function disconnect() {
+    setWalletError(undefined);
+    wagmiDisconnect();
+  }
+
+  function clearWalletError() {
+    setWalletError(undefined);
+  }
+
   return {
     address,
     chainId,
@@ -127,6 +142,7 @@ export function useWallet() {
     connectInjected: connect,
     connectWalletConnect,
     disconnect,
+    clearWalletError,
     refreshWallet: async () => undefined,
     request,
     switchToArcTestnet

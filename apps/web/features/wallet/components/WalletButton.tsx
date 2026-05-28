@@ -1,12 +1,16 @@
 "use client";
 
 import { Wallet } from "lucide-react";
-import { shortenAddress } from "@arcfundpool/utils";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
+import { WalletMenu } from "@/features/wallet/components/WalletMenu";
 
 export function WalletButton() {
-  const { address, connect, connectWalletConnect, isConnected, isConnecting, hasInjectedWallet, hasWalletConnect, walletError } = useWallet();
-  const label = isConnected ? shortenAddress(address) : isConnecting ? "Connecting" : "Connect Wallet";
+  const { connect, connectWalletConnect, isConnected, isConnecting, hasInjectedWallet, hasWalletConnect, walletError, clearWalletError } = useWallet();
+  const label = isConnecting ? "Connecting" : "Connect Wallet";
+
+  if (isConnected) {
+    return <WalletMenu />;
+  }
 
   if (!isConnected && hasWalletConnect) {
     return (
@@ -14,7 +18,10 @@ export function WalletButton() {
         <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={connect}
+          onClick={() => {
+            clearWalletError();
+            void connect();
+          }}
           disabled={isConnecting || (!hasInjectedWallet && !hasWalletConnect)}
           className="tap-target inline-flex items-center justify-center gap-2 rounded-full border border-blue-300/20 bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-900/20 transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:bg-blue-500/25 disabled:text-blue-100/75"
         >
@@ -24,7 +31,10 @@ export function WalletButton() {
         {hasInjectedWallet && (
           <button
             type="button"
-            onClick={connectWalletConnect}
+            onClick={() => {
+              clearWalletError();
+              void connectWalletConnect();
+            }}
             disabled={isConnecting}
             className="tap-target hidden items-center justify-center rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 lg:inline-flex"
           >
@@ -41,7 +51,10 @@ export function WalletButton() {
     <div className="flex flex-col gap-2">
       <button
         type="button"
-        onClick={connect}
+        onClick={() => {
+          clearWalletError();
+          void connect();
+        }}
         disabled={(!hasInjectedWallet && !hasWalletConnect) || isConnecting}
         title={!hasInjectedWallet && !hasWalletConnect ? "Install an injected wallet or configure WalletConnect." : undefined}
         className="tap-target inline-flex items-center justify-center gap-2 rounded-full border border-blue-300/20 bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-900/20 transition hover:bg-[var(--primary-strong)] disabled:cursor-not-allowed disabled:bg-blue-500/25 disabled:text-blue-100/75"
