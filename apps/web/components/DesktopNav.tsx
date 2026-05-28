@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Compass, PlusCircle, ReceiptText, Settings } from "lucide-react";
+import { BarChart3, Compass, Droplets, PlusCircle, ReceiptText, Settings } from "lucide-react";
 import { WalletButton } from "@/features/wallet/components/WalletButton";
 import { NetworkBadge } from "@/features/network/components/NetworkBadge";
 import { cn } from "@/lib/cn";
@@ -51,6 +51,15 @@ export function DesktopNav() {
         </nav>
         <div className="flex min-w-0 shrink-0 items-center gap-2">
           <NetworkBadge />
+          <a
+            href="https://faucet.circle.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tap-target inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+          >
+            <Droplets size={15} />
+            Get Faucet
+          </a>
           <WalletButton />
         </div>
       </div>

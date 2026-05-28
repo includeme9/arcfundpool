@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleDollarSign, Network, Wallet, type LucideIcon } from "lucide-react";
+import { CheckCircle2, CircleDollarSign, Droplets, Network, Wallet, type LucideIcon } from "lucide-react";
 import { arcTestnet, CONTRACTS, USDC_TOKEN } from "@arcfundpool/config";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 import { SettingsDiagnostics } from "@/features/network/components/SettingsDiagnostics";
@@ -47,6 +47,28 @@ export default function SettingsPage() {
         <Message icon={Wallet} title="Wallet disconnected" text="Connect a wallet to create pools, approve USDC, contribute, withdraw, or refund." />
         <Message icon={Network} title="Wrong network" text="Switch to Arc Testnet before signing transactions." />
         <Message icon={CircleDollarSign} title="Insufficient USDC" text="Add USDC for both contribution amount and Arc gas-related costs." />
+      </div>
+
+      <div className="card mt-6 p-5">
+        <div className="flex items-start gap-3">
+          <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-blue-400/12 text-[var(--primary-strong)]">
+            <Droplets size={19} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-semibold text-white">Need Arc Testnet USDC?</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Use the Circle Faucet to request testnet USDC for Arc gas and pool transactions. Select Arc Testnet, choose USDC, and paste your wallet address.
+            </p>
+            <a
+              href="https://faucet.circle.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tap-target mt-4 inline-flex w-full items-center justify-center rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
+            >
+              Get Testnet USDC
+            </a>
+          </div>
+        </div>
       </div>
 
       <div className="card mt-6 p-5">
