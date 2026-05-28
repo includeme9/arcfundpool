@@ -14,9 +14,14 @@ export function MobileHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06101f]/95 backdrop-blur-xl lg:hidden">
       <div className="app-container flex min-h-[60px] min-w-0 items-center justify-between gap-3 py-2">
         <Link href="/" className="flex min-w-0 items-center gap-2">
-          <div className="grid size-8 shrink-0 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--primary),var(--cyan),var(--violet))] text-sm font-bold text-white">
-            A
-          </div>
+          <img
+            src="/favicon.svg"
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 shrink-0 rounded-xl"
+            draggable={false}
+          />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">ArcFundPool</p>
           </div>

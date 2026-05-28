@@ -21,9 +21,14 @@ export function DesktopNav() {
     <header className="sticky top-0 z-40 hidden border-b border-white/10 bg-[#06101f]/88 backdrop-blur-xl lg:block">
       <div className="app-container flex min-h-[72px] min-w-0 items-center justify-between gap-4 py-3">
         <Link href="/" className="flex min-w-0 shrink-0 items-center gap-3">
-          <div className="grid size-9 place-items-center rounded-2xl bg-[linear-gradient(135deg,var(--primary),var(--cyan),var(--violet))] font-bold text-white">
-            A
-          </div>
+          <img
+            src="/favicon.svg"
+            alt=""
+            width={36}
+            height={36}
+            className="size-9 shrink-0 rounded-2xl"
+            draggable={false}
+          />
           <div className="min-w-0">
             <p className="text-base font-semibold">ArcFundPool</p>
             <p className="text-xs text-[var(--muted)]">USDC funding pools on Arc</p>
