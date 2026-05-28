@@ -9,6 +9,7 @@ import { useWallet } from "@/features/wallet/hooks/useWallet";
 export function MobileHeader() {
   const { connect, isArcTestnet, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect, clearWalletError } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
+  const showWalletMenu = isConnected && isArcTestnet;
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06101f]/95 backdrop-blur-xl lg:hidden">
@@ -27,7 +28,7 @@ export function MobileHeader() {
           </div>
         </Link>
 
-        <div className="flex min-w-0 shrink-0 items-center gap-2">
+        <div className="flex min-w-0 shrink-0 items-center justify-end gap-2">
           <a
             href="https://faucet.circle.com/"
             target="_blank"
@@ -58,7 +59,7 @@ export function MobileHeader() {
             <AddArcNetworkButton className="[&_button]:min-h-[40px] [&_button]:px-3 [&_button]:py-2 [&_button]:text-xs [&_p]:hidden" label="Switch to Arc Testnet" />
           )}
 
-          {isConnected && isArcTestnet && (
+          {showWalletMenu && (
             <WalletMenu compact />
           )}
         </div>
