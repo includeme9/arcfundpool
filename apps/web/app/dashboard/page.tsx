@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, CircleDollarSign, Layers3, PlusCircle, ReceiptText, Trophy } from "lucide-react";
+import { Activity, CircleDollarSign, Layers3, PlusCircle, ReceiptText, Trophy, Wallet } from "lucide-react";
 import { PoolCard } from "@/components/PoolCard";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -23,6 +23,18 @@ export default function DashboardPage() {
     return (
       <section className="app-container py-8 md:py-12">
         <LoadingState label="Loading creator pool activity" />
+      </section>
+    );
+  }
+
+  if (!address) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <h1 className="text-3xl font-semibold text-white md:text-4xl">Creator dashboard</h1>
+        <p className="mt-3 text-[var(--muted)]">Monitor your pools, funding progress, and recent USDC contribution activity.</p>
+        <div className="mt-8">
+          <EmptyState icon={Wallet} title="Connect your wallet to view your creator dashboard." message="Your creator pools and recent USDC contribution activity will appear after you connect." />
+        </div>
       </section>
     );
   }

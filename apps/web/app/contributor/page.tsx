@@ -1,6 +1,6 @@
 "use client";
 
-import { ReceiptText, RotateCcw, WalletCards } from "lucide-react";
+import { ReceiptText, RotateCcw, Wallet, WalletCards } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingState } from "@/components/LoadingState";
@@ -20,6 +20,18 @@ export default function ContributorPage() {
     return (
       <section className="app-container py-8 md:py-12">
         <LoadingState label="Loading contributor activity" />
+      </section>
+    );
+  }
+
+  if (!address) {
+    return (
+      <section className="app-container py-8 md:py-12">
+        <h1 className="text-3xl font-semibold text-white md:text-4xl">Contributor dashboard</h1>
+        <p className="mt-3 text-[var(--muted)]">Track pools you have funded, contribution receipts, and available refund actions.</p>
+        <div className="mt-8">
+          <EmptyState icon={Wallet} title="Connect your wallet to view your contribution history." message="Your USDC contributions, receipts, and refund actions will appear after you connect." />
+        </div>
       </section>
     );
   }

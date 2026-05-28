@@ -17,6 +17,7 @@ type WalletState = {
   chainId?: number;
   connector?: ConnectorKind;
   provider?: EthereumProvider;
+  walletError?: string;
   isConnecting: boolean;
   connect: () => Promise<void>;
   connectInjected: () => Promise<void>;
@@ -39,6 +40,20 @@ function warnMissingProjectId() {
     console.warn("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not configured. WalletConnect is disabled; injected wallets still work.");
     warnedMissingProjectId = true;
   }
+}
+
+function walletConnectErrorMessage(error: unknown) {
+  const maybeError = error as { message?: string; code?: number };
+  console.warn("[ArcFundPool] WalletConnect connection failed", {
+    code: maybeError?.code,
+    message: maybeError?.message
+  });
+
+  if (maybeError?.message?.toLowerCase().includes("user rejected")) {
+    return "Wallet request was rejected.";
+  }
+
+  return "WalletConnect could not be opened. Check the Project ID configuration and try again.";
 }
 
 function parseChainId(chainIdHex?: string) {
@@ -101,7 +116,7 @@ const walletStore = create<WalletState>((set, get) => ({
   },
   async connectInjected() {
     if (!window.ethereum) return;
-    set({ isConnecting: true });
+    set({ isConnecting: true, walletError: undefined });
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
       set({ provider: window.ethereum, connector: "injected" });
@@ -112,14 +127,19 @@ const walletStore = create<WalletState>((set, get) => ({
     }
   },
   async connectWalletConnect() {
-    set({ isConnecting: true });
+    set({ isConnecting: true, walletError: undefined });
     try {
       const provider = await getWalletConnectProvider();
-      if (!provider) return;
+      if (!provider) {
+        set({ walletError: "WalletConnect Project ID is not configured." });
+        return;
+      }
       await provider.request({ method: "eth_requestAccounts" });
       set({ provider, connector: "walletconnect" });
       attachProviderEvents(provider, get().refreshWallet);
       await get().refreshWallet();
+    } catch (error) {
+      set({ walletError: walletConnectErrorMessage(error) });
     } finally {
       set({ isConnecting: false });
     }

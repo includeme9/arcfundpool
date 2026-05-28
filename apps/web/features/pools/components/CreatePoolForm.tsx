@@ -35,6 +35,7 @@ export function CreatePoolForm() {
   const [txHash, setTxHash] = useState<Hash>();
   const [createdPoolUrl, setCreatedPoolUrl] = useState<string>();
   const [submitError, setSubmitError] = useState<string>();
+  const [stepError, setStepError] = useState<string>();
   const parsed = useMemo(() => createPoolSchema.safeParse(form), [form]);
   const validationIssue = !parsed.success ? parsed.error.issues[0] : undefined;
   const config = getOnchainConfig();
@@ -42,6 +43,7 @@ export function CreatePoolForm() {
   const canSubmit = isConnected && !wrongNetwork && config.canWrite && parsed.success;
 
   function update<K extends keyof CreatePoolInput>(key: K, value: CreatePoolInput[K]) {
+    setStepError(undefined);
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -53,6 +55,22 @@ export function CreatePoolForm() {
 
   function focusValidationField() {
     setStep(stepForField(String(validationIssue?.path[0] ?? "")));
+  }
+
+  function firstIssueForStep(stepIndex: number) {
+    if (parsed.success) return undefined;
+    return parsed.error.issues.find((issue) => stepForField(String(issue.path[0] ?? "")) === stepIndex);
+  }
+
+  function continueFromStep() {
+    const issue = firstIssueForStep(step);
+    if (issue) {
+      setStepError(issue.message);
+      return;
+    }
+
+    setStepError(undefined);
+    setStep((value) => Math.min(2, value + 1));
   }
 
   async function submitCreatePool() {
@@ -165,6 +183,7 @@ export function CreatePoolForm() {
                 ))}
               </select>
             </label>
+            {stepError && <StepValidationButton message={stepError} onClick={() => setStep(step)} />}
           </div>
         )}
 
@@ -172,6 +191,7 @@ export function CreatePoolForm() {
           <div className="space-y-4">
             <Field label="Target amount in USDC" required value={String(form.targetAmount || "")} onChange={(value) => update("targetAmount", Number(value))} placeholder="25000" type="number" error={Number(form.targetAmount) <= 0 ? "Enter a USDC target greater than zero." : undefined} />
             <Field label="Deadline" required value={form.deadline} onChange={(value) => update("deadline", value)} type="date" error={form.deadline && new Date(form.deadline).getTime() <= Date.now() ? "Choose a future deadline." : undefined} />
+            {stepError && <StepValidationButton message={stepError} onClick={() => setStep(step)} />}
           </div>
         )}
 
@@ -221,7 +241,7 @@ export function CreatePoolForm() {
           {step < 2 ? (
             <button
               type="button"
-              onClick={() => setStep((value) => Math.min(2, value + 1))}
+              onClick={continueFromStep}
               className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-2 font-semibold text-white"
             >
               Continue
@@ -271,6 +291,20 @@ export function CreatePoolForm() {
         </div>
       </aside>
     </div>
+  );
+}
+
+function StepValidationButton({ message, onClick }: { message: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onFocus={onClick}
+      className="flex w-full items-start gap-3 rounded-3xl border border-rose-400/25 bg-rose-400/10 p-4 text-left text-sm text-rose-100"
+    >
+      <AlertTriangle className="mt-0.5 shrink-0" size={18} />
+      <span>{message}</span>
+    </button>
   );
 }
 

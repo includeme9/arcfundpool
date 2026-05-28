@@ -7,6 +7,7 @@ import { contributionSchema } from "@arcfundpool/validation";
 import { arcFundPoolAbi, erc20Abi } from "@arcfundpool/web3";
 import { cn } from "@/lib/cn";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
+import { formatUSDC } from "@arcfundpool/utils";
 import {
   formatUSDCAmount,
   getOnchainConfig,
@@ -183,7 +184,7 @@ export function ContributionInput({
       </label>
       <div className="grid gap-2 text-xs text-[var(--muted)] sm:grid-cols-2">
         <span className="rounded-full bg-white/[0.035] px-3 py-2">
-          Balance: {formatUSDCAmount(balance, config.usdcDecimals).toLocaleString("en-US")} USDC
+          Balance: {formatUSDC(formatUSDCAmount(balance, config.usdcDecimals))}
         </span>
         <span className="rounded-full bg-white/[0.035] px-3 py-2">Arc gas is paid in USDC</span>
       </div>

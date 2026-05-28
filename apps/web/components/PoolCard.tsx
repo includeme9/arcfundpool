@@ -5,9 +5,9 @@ import { daysLeft, formatUSDC, shortenAddress } from "@arcfundpool/utils";
 import { PoolProgress } from "@/components/PoolProgress";
 import { StatusBadge } from "@/components/StatusBadge";
 
-export function PoolCard({ pool }: { pool: FundingPool }) {
-  return (
-    <Link href={`/pool/${pool.id}`} className="card group block overflow-hidden p-4 transition hover:-translate-y-1 hover:border-blue-300/35 sm:p-5">
+export function PoolCard({ pool, href }: { pool: FundingPool; href?: string | false }) {
+  const content = (
+    <>
       <div className="mb-4 h-1 rounded-full bg-[linear-gradient(90deg,var(--primary),var(--cyan),var(--violet))] opacity-80" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -38,6 +38,16 @@ export function PoolCard({ pool }: { pool: FundingPool }) {
           Onchain
         </span>
       </div>
+    </>
+  );
+
+  if (href === false) {
+    return <article className="card block overflow-hidden p-4 sm:p-5">{content}</article>;
+  }
+
+  return (
+    <Link href={href ?? `/pool/${pool.id}`} className="card group block overflow-hidden p-4 transition hover:-translate-y-1 hover:border-blue-300/35 sm:p-5">
+      {content}
     </Link>
   );
 }

@@ -34,21 +34,21 @@ export default function LandingPage() {
     <div>
       <section className="app-container grid min-h-[calc(100vh-80px)] gap-10 py-10 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-16">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-sm font-semibold text-cyan-100">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/45 bg-cyan-300/15 px-3 py-2 text-sm font-semibold text-cyan-50 shadow-sm shadow-cyan-950/30">
             Stablecoin-native funding on Arc Testnet
           </div>
-          <h1 className="mt-6 text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-semibold leading-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
             Create transparent USDC funding pools on Arc.
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
+          <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
             Launch a pool, accept USDC contributions, and let your community track funding progress with onchain records.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/create" className="tap-target inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white sm:w-auto">
+            <Link href="/create" className="tap-target inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white shadow-lg shadow-blue-950/30 sm:w-auto">
               Create Pool
               <ArrowRight size={18} />
             </Link>
-            <Link href="/explore" className="tap-target inline-flex w-full items-center justify-center rounded-full border border-white/10 px-6 py-3 font-semibold text-white sm:w-auto">
+            <Link href="/explore" className="tap-target inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white/[0.035] px-6 py-3 font-semibold text-white sm:w-auto">
               Explore Pools
             </Link>
           </div>
@@ -65,7 +65,7 @@ export default function LandingPage() {
                 </div>
                 <Smartphone className="text-[var(--cyan)]" size={20} />
               </div>
-              <PoolCard pool={previewPool} />
+              <PoolCard pool={previewPool} href="/explore" />
             </div>
           </div>
         </div>
