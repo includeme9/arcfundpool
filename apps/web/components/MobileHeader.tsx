@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Wallet } from "lucide-react";
+import { Droplets, Wallet } from "lucide-react";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 import { WalletMenu } from "@/features/wallet/components/WalletMenu";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
@@ -9,7 +9,6 @@ import { useWallet } from "@/features/wallet/hooks/useWallet";
 export function MobileHeader() {
   const { connect, isArcTestnet, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect, clearWalletError } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
-  const subtitle = !isConnected ? "Connect wallet" : isArcTestnet ? "Arc Testnet USDC" : "Wrong network";
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06101f]/95 backdrop-blur-xl lg:hidden">
@@ -20,11 +19,21 @@ export function MobileHeader() {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">ArcFundPool</p>
-            <p className="truncate text-[11px] text-[var(--muted)]">{subtitle}</p>
           </div>
         </Link>
 
         <div className="flex min-w-0 shrink-0 items-center gap-2">
+          <a
+            href="https://faucet.circle.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Get testnet USDC from the Circle Faucet"
+            title="Get Faucet"
+            className="tap-target grid size-10 shrink-0 place-items-center rounded-full border border-white/10 text-cyan-100 transition hover:bg-white/10"
+          >
+            <Droplets size={16} />
+          </a>
+
           {!isConnected && (
             <button
               type="button"
@@ -41,22 +50,11 @@ export function MobileHeader() {
           )}
 
           {isConnected && isWrongNetwork && (
-            <div className="flex items-center gap-1.5">
-              <span className="hidden items-center gap-1 rounded-full border border-amber-300/25 bg-amber-300/10 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100 sm:inline-flex">
-                <AlertTriangle size={12} />
-                Wrong Network
-              </span>
-              <AddArcNetworkButton className="[&_button]:min-h-[40px] [&_button]:px-3 [&_button]:py-2 [&_button]:text-xs [&_p]:hidden" label="Switch to Arc Testnet" />
-            </div>
+            <AddArcNetworkButton className="[&_button]:min-h-[40px] [&_button]:px-3 [&_button]:py-2 [&_button]:text-xs [&_p]:hidden" label="Switch to Arc Testnet" />
           )}
 
           {isConnected && isArcTestnet && (
-            <div className="flex min-w-0 items-center gap-1.5">
-              <span className="rounded-full border border-cyan-300/18 bg-cyan-300/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-cyan-100">
-                Arc Testnet / USDC gas
-              </span>
-              <WalletMenu compact />
-            </div>
+            <WalletMenu compact />
           )}
         </div>
       </div>
