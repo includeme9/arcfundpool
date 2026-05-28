@@ -20,7 +20,7 @@ const filters: { label: string; value: PoolFilter }[] = [
 ];
 
 export function ExploreClient() {
-  const { data, isFallback, isLoading, error } = usePools();
+  const { data, isFallback, isLoading, error, refresh } = usePools();
   const [filter, setFilter] = useState<PoolFilter>("all");
   const [query, setQuery] = useState("");
   const visiblePools = useMemo(() => filterPools(data, filter, query), [data, filter, query]);
@@ -66,8 +66,11 @@ export function ExploreClient() {
         </div>
       )}
       {error && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-4">
           <ErrorState message={error} />
+          <button type="button" onClick={() => void refresh()} className="tap-target rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white">
+            Retry Arc Testnet read
+          </button>
         </div>
       )}
       {isFallback && (
@@ -76,13 +79,13 @@ export function ExploreClient() {
         </p>
       )}
 
-      {!isLoading && visiblePools.length ? (
+      {!isLoading && !error && visiblePools.length ? (
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visiblePools.map((pool) => (
             <PoolCard key={pool.id} pool={pool} />
           ))}
         </div>
-      ) : (
+      ) : !isLoading && !error ? (
         <div className="mt-8">
           <EmptyState
             icon={isFallback ? WalletCards : PlusCircle}
@@ -95,7 +98,7 @@ export function ExploreClient() {
             </Link>
           )}
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

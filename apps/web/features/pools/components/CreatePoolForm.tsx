@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, XCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, XCircle } from "lucide-react";
 import { POOL_CATEGORIES } from "@arcfundpool/config";
 import { createPoolSchema, type CreatePoolInput } from "@arcfundpool/validation";
 import { arcFundPoolAbi } from "@arcfundpool/web3";
@@ -26,6 +27,7 @@ const initialForm: CreatePoolInput = {
 const txStates = ["Waiting for wallet confirmation", "Creating pool", "Pool created successfully", "Failed transaction"];
 
 export function CreatePoolForm() {
+  const router = useRouter();
   const { address, chainId, connect, isConnected, provider } = useWallet();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CreatePoolInput>(initialForm);
@@ -34,11 +36,23 @@ export function CreatePoolForm() {
   const [createdPoolUrl, setCreatedPoolUrl] = useState<string>();
   const [submitError, setSubmitError] = useState<string>();
   const parsed = useMemo(() => createPoolSchema.safeParse(form), [form]);
+  const validationIssue = !parsed.success ? parsed.error.issues[0] : undefined;
   const config = getOnchainConfig();
   const wrongNetwork = isConnected && chainId !== undefined && chainId !== config.chainId;
+  const canSubmit = isConnected && !wrongNetwork && config.canWrite && parsed.success;
 
   function update<K extends keyof CreatePoolInput>(key: K, value: CreatePoolInput[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function stepForField(field?: string) {
+    if (field === "title" || field === "description" || field === "category") return 0;
+    if (field === "targetAmount" || field === "deadline") return 1;
+    return 2;
+  }
+
+  function focusValidationField() {
+    setStep(stepForField(String(validationIssue?.path[0] ?? "")));
   }
 
   async function submitCreatePool() {
@@ -99,7 +113,12 @@ export function CreatePoolForm() {
         .find((log) => log?.eventName === "PoolCreated");
 
       const poolId = createdLog?.eventName === "PoolCreated" ? createdLog.args.poolId : undefined;
+      console.warn("[ArcFundPool] PoolCreated transaction confirmed", {
+        txHash: hash,
+        poolId: poolId?.toString()
+      });
       setCreatedPoolUrl(poolId !== undefined ? `/pool/${poolId.toString()}` : "/explore");
+      router.refresh();
     } catch (error) {
       setTxState(3);
       setSubmitError(userFacingError(error));
@@ -124,9 +143,9 @@ export function CreatePoolForm() {
 
         {step === 0 && (
           <div className="space-y-4">
-            <Field label="Pool title" value={form.title} onChange={(value) => update("title", value)} placeholder="Open-source builder sprint" error={!form.title ? "A clear pool title is required." : undefined} />
+            <Field label="Pool title" required value={form.title} onChange={(value) => update("title", value)} placeholder="Open-source builder sprint" error={!form.title ? "A clear pool title is required." : undefined} />
             <label className="block">
-              <span className="text-sm font-medium text-white">Description</span>
+              <span className="text-sm font-medium text-white">Funding description <span className="text-amber-100">required</span></span>
               <textarea
                 value={form.description}
                 onChange={(event) => update("description", event.target.value)}
@@ -134,15 +153,8 @@ export function CreatePoolForm() {
                 className="mt-2 min-h-32 w-full rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-white outline-none focus:border-blue-300/50"
               />
             </label>
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className="space-y-4">
-            <Field label="Target amount in USDC" value={String(form.targetAmount || "")} onChange={(value) => update("targetAmount", Number(value))} placeholder="25000" type="number" error={Number(form.targetAmount) <= 0 ? "Enter a USDC target greater than zero." : undefined} />
-            <Field label="Deadline" value={form.deadline} onChange={(value) => update("deadline", value)} type="date" error={form.deadline && new Date(form.deadline).getTime() <= Date.now() ? "Choose a future deadline." : undefined} />
             <label className="block">
-              <span className="text-sm font-medium text-white">Category</span>
+              <span className="text-sm font-medium text-white">Category <span className="text-amber-100">required</span></span>
               <select
                 value={form.category}
                 onChange={(event) => update("category", event.target.value as CreatePoolInput["category"])}
@@ -153,6 +165,13 @@ export function CreatePoolForm() {
                 ))}
               </select>
             </label>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="space-y-4">
+            <Field label="Target amount in USDC" required value={String(form.targetAmount || "")} onChange={(value) => update("targetAmount", Number(value))} placeholder="25000" type="number" error={Number(form.targetAmount) <= 0 ? "Enter a USDC target greater than zero." : undefined} />
+            <Field label="Deadline" required value={form.deadline} onChange={(value) => update("deadline", value)} type="date" error={form.deadline && new Date(form.deadline).getTime() <= Date.now() ? "Choose a future deadline." : undefined} />
           </div>
         )}
 
@@ -168,8 +187,16 @@ export function CreatePoolForm() {
               </div>
             )}
             {!config.canWrite && <ErrorState message={`Live write config is missing: ${config.missing.join(", ")}.`} />}
-            {!parsed.success && (
-              <ErrorState message={parsed.error.issues[0]?.message ?? "Review the pool details before creating."} />
+            {validationIssue && (
+              <button
+                type="button"
+                onClick={focusValidationField}
+                onFocus={focusValidationField}
+                className="flex w-full items-start gap-3 rounded-3xl border border-rose-400/25 bg-rose-400/10 p-4 text-left text-sm text-rose-100"
+              >
+                <AlertTriangle className="mt-0.5 shrink-0" size={18} />
+                <span>{validationIssue.message ?? "Review the pool details before creating."}</span>
+              </button>
             )}
             {submitError && <ErrorState message={submitError} />}
             {createdPoolUrl && (
@@ -204,7 +231,7 @@ export function CreatePoolForm() {
             <button
               type="button"
               onClick={submitCreatePool}
-              disabled={!parsed.success || wrongNetwork}
+              disabled={!canSubmit}
               className="tap-target inline-flex items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 py-3 font-semibold text-white disabled:opacity-45"
             >
               Create Pool on Arc
@@ -247,10 +274,10 @@ export function CreatePoolForm() {
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = "text", error }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; error?: string }) {
+function Field({ label, value, onChange, placeholder, type = "text", error, required = false }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; error?: string; required?: boolean }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-white">{label}</span>
+      <span className="text-sm font-medium text-white">{label}{required && <span className="text-amber-100"> required</span>}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}

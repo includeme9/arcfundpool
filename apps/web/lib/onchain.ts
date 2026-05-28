@@ -89,6 +89,42 @@ export function getPublicClient() {
   });
 }
 
+function warnReadError(functionName: string, error: unknown, config: OnchainConfig) {
+  const maybeError = error as { name?: string; message?: string; shortMessage?: string; cause?: unknown };
+  console.warn("[ArcFundPool] Arc Testnet contract read failed", {
+    functionName,
+    name: maybeError?.name,
+    message: maybeError?.message,
+    shortMessage: maybeError?.shortMessage,
+    cause: maybeError?.cause,
+    rpcUrl: config.rpcUrl,
+    contractAddress: config.contractAddress,
+    chainId: config.chainId
+  });
+}
+
+async function readPoolCountForDiagnostics(client: NonNullable<ReturnType<typeof getPublicClient>>, config: OnchainConfig) {
+  try {
+    const count = await client.readContract({
+      address: config.contractAddress!,
+      abi: arcFundPoolAbi,
+      functionName: "poolCount"
+    });
+
+    console.warn("[ArcFundPool] poolCount read succeeded", {
+      poolCount: count.toString(),
+      rpcUrl: config.rpcUrl,
+      contractAddress: config.contractAddress,
+      chainId: config.chainId
+    });
+
+    return count;
+  } catch (error) {
+    warnReadError("poolCount()", error, config);
+    throw error;
+  }
+}
+
 export function getWalletClient(provider: NonNullable<Window["ethereum"]>) {
   return createWalletClient({
     chain: arcTestnet,
@@ -141,21 +177,23 @@ export async function loadPoolDataset(): Promise<PoolDataset> {
   }
 
   try {
-    const count = await client.readContract({
-      address: config.contractAddress,
-      abi: arcFundPoolAbi,
-      functionName: "poolCount"
-    });
+    const count = await readPoolCountForDiagnostics(client, config);
 
     const poolIds = Array.from({ length: Number(count) }, (_, index) => BigInt(index));
     const pools = await Promise.all(
       poolIds.map(async (poolId) => {
-        const raw = await client.readContract({
-          address: config.contractAddress!,
-          abi: arcFundPoolAbi,
-          functionName: "pools",
-          args: [poolId]
-        });
+        let raw: readonly [Address, string, string, bigint, bigint, bigint, boolean, boolean];
+        try {
+          raw = await client.readContract({
+            address: config.contractAddress!,
+            abi: arcFundPoolAbi,
+            functionName: "pools",
+            args: [poolId]
+          });
+        } catch (error) {
+          warnReadError(`pools(${poolId.toString()})`, error, config);
+          throw error;
+        }
 
         const pool: FundingPool = {
           id: poolId.toString(),
@@ -181,8 +219,16 @@ export async function loadPoolDataset(): Promise<PoolDataset> {
       })
     );
 
-    const contributions = await loadContributionEvents(config.contractAddress, config.usdcDecimals);
-    const transactions = await loadTransactionEvents(config.contractAddress, config.usdcDecimals);
+    const [contributions, transactions] = await Promise.all([
+      loadContributionEvents(config.contractAddress, config.usdcDecimals).catch((error) => {
+        warnReadError("Contributed events", error, config);
+        return [] as Contribution[];
+      }),
+      loadTransactionEvents(config.contractAddress, config.usdcDecimals).catch((error) => {
+        warnReadError("pool transaction events", error, config);
+        return [] as PoolTransaction[];
+      })
+    ]);
 
     return {
       pools,
