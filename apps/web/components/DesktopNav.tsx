@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, Compass, Droplets, PlusCircle, ReceiptText, Settings } from "lucide-react";
 import { WalletButton } from "@/features/wallet/components/WalletButton";
-import { NetworkBadge } from "@/features/network/components/NetworkBadge";
 import { cn } from "@/lib/cn";
 
 const links = [
@@ -50,7 +49,6 @@ export function DesktopNav() {
           })}
         </nav>
         <div className="flex min-w-0 shrink-0 items-center gap-2">
-          <NetworkBadge />
           <a
             href="https://faucet.circle.com/"
             target="_blank"
