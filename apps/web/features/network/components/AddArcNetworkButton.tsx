@@ -17,7 +17,13 @@ export function AddArcNetworkButton({ className = "", label = "Add / Switch to A
       const result = await addOrSwitchArcTestnet(request);
       setMessage(result.message);
       await refreshWallet();
-      window.setTimeout(() => void refreshWallet(), 750);
+      window.setTimeout(() => {
+        void refreshWallet();
+
+        if (result.ok) {
+          window.location.reload();
+        }
+      }, 750);
     } finally {
       setIsPending(false);
     }

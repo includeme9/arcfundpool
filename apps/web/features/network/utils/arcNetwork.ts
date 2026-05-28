@@ -1,5 +1,5 @@
 export const ARC_TESTNET_CHAIN_ID = 5042002;
-export const ARC_TESTNET_CHAIN_ID_HEX = "0x4CF0D2";
+export const ARC_TESTNET_CHAIN_ID_HEX = "0x4cef52";
 
 type EthereumRequest = (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 
@@ -8,7 +8,16 @@ type NetworkActionResult = {
   message: string;
 };
 
-function friendlyWalletError(error: unknown): NetworkActionResult {
+function warnWalletError(context: string, error: unknown) {
+  const maybeError = error as { code?: number; message?: string };
+  console.warn(`[ArcFundPool] ${context}`, {
+    code: maybeError?.code,
+    message: maybeError?.message
+  });
+}
+
+function friendlyWalletError(error: unknown, context: string): NetworkActionResult {
+  warnWalletError(context, error);
   const maybeError = error as { code?: number; message?: string };
   const message = maybeError?.message?.toLowerCase() ?? "";
 
@@ -47,8 +56,10 @@ export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<
     const maybeError = switchError as { code?: number };
 
     if (maybeError?.code !== 4902) {
-      return friendlyWalletError(switchError);
+      return friendlyWalletError(switchError, "Failed to switch to Arc Testnet");
     }
+
+    warnWalletError("Arc Testnet is not available in the wallet yet", switchError);
 
     try {
       await walletRequest({
@@ -76,11 +87,11 @@ export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<
 
         return { ok: true, message: "Switched to Arc Testnet." };
       } catch (secondSwitchError) {
-        const friendly = friendlyWalletError(secondSwitchError);
+        const friendly = friendlyWalletError(secondSwitchError, "Failed to switch after adding Arc Testnet");
         return friendly.ok ? friendly : { ok: true, message: "Arc Testnet was added. Please switch to it in your wallet." };
       }
     } catch (addError) {
-      return friendlyWalletError(addError);
+      return friendlyWalletError(addError, "Failed to add Arc Testnet");
     }
   }
 }
