@@ -32,18 +32,18 @@ const previewPool: FundingPool = {
 export default function LandingPage() {
   return (
     <div>
-      <section className="app-container grid min-h-[calc(100vh-80px)] gap-10 py-10 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-16">
+      <section className="app-container grid gap-7 pb-10 pt-8 md:grid-cols-[1.05fr_0.95fr] md:items-center md:gap-10 md:py-16 lg:min-h-[calc(100vh-80px)]">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/45 bg-cyan-300/15 px-3 py-2 text-sm font-semibold text-cyan-50 shadow-sm shadow-cyan-950/30">
             Stablecoin-native funding on Arc Testnet
           </div>
-          <h1 className="mt-6 text-4xl font-semibold leading-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 text-[2.35rem] font-semibold leading-[1.06] text-white sm:text-5xl lg:mt-6 lg:text-6xl">
             Create transparent USDC funding pools on Arc.
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
             Launch a pool, accept USDC contributions, and let your community track funding progress with onchain records.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-8">
             <Link href="/create" className="tap-target inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 font-semibold text-white shadow-lg shadow-blue-950/30 sm:w-auto">
               Create Pool
               <ArrowRight size={18} />
@@ -54,7 +54,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[360px]">
+        <div className="relative mx-auto w-full max-w-[340px] pb-3 sm:max-w-[360px] md:pb-0">
           <div className="absolute inset-5 rounded-[42px] bg-[linear-gradient(135deg,var(--primary),var(--cyan),var(--violet))] blur-2xl opacity-30" />
           <div className="relative rounded-[42px] border border-white/14 bg-[#071426] p-3 shadow-2xl">
             <div className="rounded-[32px] border border-white/10 bg-[#09172a] p-4">
@@ -71,7 +71,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="app-container grid gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="app-container grid gap-4 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:py-8">
         {features.map((feature) => {
           const Icon = feature.icon;
           return (
@@ -86,7 +86,7 @@ export default function LandingPage() {
         })}
       </section>
 
-      <section className="app-container py-10">
+      <section className="app-container pb-10 pt-7 lg:py-10">
         <div className="card p-6 md:p-8">
           <h2 className="text-2xl font-semibold text-white">How transparent funding works</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-4">

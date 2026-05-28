@@ -144,7 +144,7 @@ export function CreatePoolForm() {
   }
 
   return (
-    <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_390px]">
+    <div className="mt-6 grid min-w-0 gap-5 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-6">
       <div className="card p-4 sm:p-5 md:p-6">
         <div className="mb-5 grid grid-cols-3 gap-2">
           {[0, 1, 2].map((item) => (
@@ -224,7 +224,7 @@ export function CreatePoolForm() {
                 View created pool
               </a>
             )}
-            {txHash && <p className="break-all text-xs text-[var(--muted)]">Transaction: {txHash}</p>}
+            {txHash && <p className="truncate text-xs text-[var(--muted)]" title={txHash}>Transaction: {txHash}</p>}
           </div>
         )}
 

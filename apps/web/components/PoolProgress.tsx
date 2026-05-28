@@ -5,10 +5,10 @@ export function PoolProgress({ raised, target, compact = false }: { raised: numb
 
   return (
     <div className="space-y-2.5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-semibold text-white">{progress}% funded</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <span className="shrink-0 text-sm font-semibold text-white">{progress}% funded</span>
         {!compact && (
-          <span className="text-xs text-[var(--muted)]">
+          <span className="min-w-0 text-right text-xs text-[var(--muted)]">
             {target > 0 ? `${formatUSDC(remaining, 0)} remaining` : "No target"}
           </span>
         )}

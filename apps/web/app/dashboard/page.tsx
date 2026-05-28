@@ -49,7 +49,7 @@ export default function DashboardPage() {
         <StatCard icon={Trophy} label="Funded pools" value={String(funded)} />
         <StatCard icon={Activity} label="Withdrawn pools" value={String(withdrawn)} />
       </div>
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <section>
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-white">My pool list</h2>

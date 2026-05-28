@@ -96,15 +96,15 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <section className="app-container pb-36 pt-8 md:pb-12 md:pt-12">
-      <div className="grid gap-6 lg:grid-cols-[1fr_390px]">
+    <section className="app-container pb-28 pt-8 md:pt-12 lg:pb-12">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">
         <div className="space-y-6">
           <header className="card p-5 md:p-6">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={pool.status} />
               <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-[var(--muted)]">{pool.category}</span>
             </div>
-            <h1 className="mt-4 text-3xl font-semibold leading-tight text-white md:text-5xl">{pool.title}</h1>
+            <h1 className="mt-4 break-words text-3xl font-semibold leading-tight text-white md:text-5xl">{pool.title}</h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--muted)]">{pool.description}</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <AddressPill address={pool.creatorWallet} />
@@ -177,7 +177,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
                     <p className="font-semibold capitalize text-white">{tx.kind}</p>
                     <TransactionStatus status={tx.status} />
                   </div>
-                  <p className="mt-2 break-all text-xs text-[var(--muted)]">{tx.txHash}</p>
+                  <p className="mt-2 truncate text-xs text-[var(--muted)]" title={tx.txHash}>{tx.txHash}</p>
                 </div>
               ))}
             </div>
@@ -225,7 +225,7 @@ export default function PoolDetailPage({ params }: { params: { id: string } }) {
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Arc Testnet is the network for pool activity. USDC is used for contributions, settlement, refunds, withdrawals, and Arc gas.</p>
           </div>
           {actionError && <ErrorState message={actionError} />}
-          {actionHash && <p className="break-all rounded-3xl border border-white/10 bg-white/[0.035] p-4 text-xs text-[var(--muted)]">Last transaction: {actionHash}</p>}
+          {actionHash && <p className="truncate rounded-3xl border border-white/10 bg-white/[0.035] p-4 text-xs text-[var(--muted)]" title={actionHash}>Last transaction: {actionHash}</p>}
         </aside>
       </div>
 

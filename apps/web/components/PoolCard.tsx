@@ -46,7 +46,7 @@ export function PoolCard({ pool, href }: { pool: FundingPool; href?: string | fa
   }
 
   return (
-    <Link href={href ?? `/pool/${pool.id}`} className="card group block overflow-hidden p-4 transition hover:-translate-y-1 hover:border-blue-300/35 sm:p-5">
+    <Link href={href ?? `/pool/${pool.id}`} className="card group block min-w-0 overflow-hidden p-4 transition hover:-translate-y-1 hover:border-blue-300/35 sm:p-5">
       {content}
     </Link>
   );
@@ -54,9 +54,9 @@ export function PoolCard({ pool, href }: { pool: FundingPool; href?: string | fa
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+    <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
       <p className="text-xs text-[var(--muted)]">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+      <p className="mt-1 truncate text-sm font-semibold text-white" title={value}>{value}</p>
     </div>
   );
 }

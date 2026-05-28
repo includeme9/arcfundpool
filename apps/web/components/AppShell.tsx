@@ -3,9 +3,9 @@ import { MobileNav } from "@/components/MobileNav";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
+    <div className="min-h-screen overflow-x-hidden pb-20 lg:pb-0">
       <DesktopNav />
-      <main>{children}</main>
+      <main className="min-w-0">{children}</main>
       <MobileNav />
     </div>
   );

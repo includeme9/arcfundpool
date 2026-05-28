@@ -46,7 +46,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
       <p className="text-xs text-[var(--muted)]">{label}</p>
-      <p className="mt-2 break-all text-sm font-semibold text-white">{value}</p>
+      <p className="mt-2 min-w-0 truncate text-sm font-semibold text-white" title={value}>{value}</p>
     </div>
   );
 }
