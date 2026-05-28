@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Loader2, Sparkles, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, Loader2, Sparkles, XCircle } from "lucide-react";
 import { POOL_CATEGORIES } from "@arcfundpool/config";
 import { createPoolSchema, type CreatePoolInput } from "@arcfundpool/validation";
 import { arcFundPoolAbi } from "@arcfundpool/web3";
@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { ErrorState } from "@/components/ErrorState";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
-import { getOnchainConfig, getWalletClient, parseUSDCAmount, userFacingError, waitForReceipt } from "@/lib/onchain";
+import { getExplorerTxUrl, getOnchainConfig, getWalletClient, parseUSDCAmount, waitForReceipt } from "@/lib/onchain";
 
 const initialForm: CreatePoolInput = {
   title: "",
@@ -24,17 +24,18 @@ const initialForm: CreatePoolInput = {
   externalLink: ""
 };
 
-const txStates = ["Waiting for wallet confirmation", "Creating pool", "Pool created successfully", "Failed transaction"];
+type CreateTxStatus = "idle" | "confirming" | "pending" | "success" | "error";
 
 export function CreatePoolForm() {
   const router = useRouter();
   const { address, chainId, connect, isConnected, provider } = useWallet();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CreatePoolInput>(initialForm);
-  const [txState, setTxState] = useState(0);
+  const [txStatus, setTxStatus] = useState<CreateTxStatus>("idle");
   const [txHash, setTxHash] = useState<Hash>();
   const [createdPoolUrl, setCreatedPoolUrl] = useState<string>();
   const [submitError, setSubmitError] = useState<string>();
+  const [txError, setTxError] = useState<string>();
   const [stepError, setStepError] = useState<string>();
   const parsed = useMemo(() => createPoolSchema.safeParse(form), [form]);
   const validationIssue = !parsed.success ? parsed.error.issues[0] : undefined;
@@ -75,6 +76,8 @@ export function CreatePoolForm() {
 
   async function submitCreatePool() {
     setSubmitError(undefined);
+    setTxError(undefined);
+    setTxHash(undefined);
     setCreatedPoolUrl(undefined);
 
     if (!isConnected) {
@@ -103,7 +106,7 @@ export function CreatePoolForm() {
     }
 
     try {
-      setTxState(0);
+      setTxStatus("confirming");
       const walletClient = getWalletClient(provider);
       const deadline = BigInt(Math.floor(new Date(parsed.data.deadline).getTime() / 1000));
       const metadataURI = parsed.data.externalLink || parsed.data.imageUrl || "";
@@ -116,9 +119,9 @@ export function CreatePoolForm() {
       });
 
       setTxHash(hash);
-      setTxState(1);
+      setTxStatus("pending");
       const receipt = await waitForReceipt(hash);
-      setTxState(receipt.status === "success" ? 2 : 3);
+      setTxStatus(receipt.status === "success" ? "success" : "error");
 
       const createdLog = receipt.logs
         .map((log) => {
@@ -138,8 +141,10 @@ export function CreatePoolForm() {
       setCreatedPoolUrl(poolId !== undefined ? `/pool/${poolId.toString()}` : "/explore");
       router.refresh();
     } catch (error) {
-      setTxState(3);
-      setSubmitError(userFacingError(error));
+      const message = createPoolTxError(error);
+      setTxStatus("error");
+      setTxError(message);
+      setSubmitError(message);
     }
   }
 
@@ -219,12 +224,6 @@ export function CreatePoolForm() {
               </button>
             )}
             {submitError && <ErrorState message={submitError} />}
-            {createdPoolUrl && (
-              <a href={createdPoolUrl} className="tap-target flex items-center justify-center rounded-full bg-emerald-400 px-5 py-3 font-semibold text-slate-950">
-                View created pool
-              </a>
-            )}
-            {txHash && <p className="truncate text-xs text-[var(--muted)]" title={txHash}>Transaction: {txHash}</p>}
           </div>
         )}
 
@@ -278,18 +277,92 @@ export function CreatePoolForm() {
             <PoolProgress raised={0} target={Number(form.targetAmount) || 1} />
           </div>
         </div>
-        <div className="card p-5">
-          <p className="font-semibold text-white">Transaction state</p>
-          <div className="mt-4 space-y-3">
-            {txStates.map((state, index) => (
-              <div key={state} className="flex items-center gap-3 text-sm text-[var(--muted)]">
-                {index < 2 && index === txState ? <Loader2 className="animate-spin text-cyan-200" size={18} /> : index === 2 ? <CheckCircle2 className="text-emerald-300" size={18} /> : index === 3 ? <XCircle className="text-rose-300" size={18} /> : <span className="size-[18px] rounded-full border border-white/15" />}
-                <span className={index === txState ? "text-white" : ""}>{state}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TransactionStateCard status={txStatus} txHash={txHash} createdPoolUrl={createdPoolUrl} error={txError} onRetry={submitCreatePool} />
       </aside>
+    </div>
+  );
+}
+
+function createPoolTxError(error: unknown) {
+  const maybeError = error as { code?: number; message?: string };
+  const message = maybeError?.message?.toLowerCase() ?? "";
+
+  if (maybeError?.code === 4001 || message.includes("user rejected") || message.includes("rejected")) {
+    return "Wallet request was rejected.";
+  }
+
+  return "The transaction was rejected or failed. Please check your wallet and try again.";
+}
+
+function TransactionStateCard({ status, txHash, createdPoolUrl, error, onRetry }: { status: CreateTxStatus; txHash?: Hash; createdPoolUrl?: string; error?: string; onRetry: () => void }) {
+  const explorerUrl = txHash ? getExplorerTxUrl(txHash) : "";
+  const state = {
+    idle: {
+      title: "Ready to create",
+      copy: "Complete the form, then submit your pool on Arc Testnet.",
+      icon: <span className="size-5 rounded-full border border-white/20" />,
+      tone: "text-cyan-100"
+    },
+    confirming: {
+      title: "Confirm in wallet",
+      copy: "Review and approve the create pool transaction in your wallet.",
+      icon: <Loader2 className="animate-spin text-cyan-200" size={20} />,
+      tone: "text-cyan-100"
+    },
+    pending: {
+      title: "Creating pool on Arc",
+      copy: "Your transaction was submitted and is waiting for confirmation.",
+      icon: <Loader2 className="animate-spin text-cyan-200" size={20} />,
+      tone: "text-cyan-100"
+    },
+    success: {
+      title: "Pool created",
+      copy: "Your funding pool is live on Arc Testnet.",
+      icon: <CheckCircle2 className="text-emerald-300" size={20} />,
+      tone: "text-emerald-100"
+    },
+    error: {
+      title: "Transaction failed",
+      copy: error ?? "The transaction was rejected or failed. Please check your wallet and try again.",
+      icon: <XCircle className="text-rose-300" size={20} />,
+      tone: "text-rose-100"
+    }
+  }[status];
+
+  return (
+    <div className="card p-5">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5">{state.icon}</div>
+        <div className="min-w-0">
+          <p className={`font-semibold ${state.tone}`}>{state.title}</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{state.copy}</p>
+        </div>
+      </div>
+
+      {txHash && (
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+          <p className="text-xs text-[var(--muted)]">Transaction</p>
+          <p className="mt-1 truncate text-xs font-semibold text-white" title={txHash}>{txHash}</p>
+          {explorerUrl && (
+            <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-100">
+              View on Arcscan
+              <ExternalLink size={14} />
+            </a>
+          )}
+        </div>
+      )}
+
+      {status === "success" && (
+        <a href={createdPoolUrl ?? "/explore"} className="tap-target mt-4 flex items-center justify-center rounded-full bg-emerald-400 px-5 py-3 font-semibold text-slate-950">
+          {createdPoolUrl ? "View pool" : "Explore pools"}
+        </a>
+      )}
+
+      {status === "error" && (
+        <button type="button" onClick={onRetry} className="tap-target mt-4 w-full rounded-full border border-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+          Retry
+        </button>
+      )}
     </div>
   );
 }
