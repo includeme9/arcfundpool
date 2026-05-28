@@ -2,6 +2,7 @@ import { CheckCircle2, CircleDollarSign, Network, Wallet, type LucideIcon } from
 import { arcTestnet, CONTRACTS, USDC_TOKEN } from "@arcfundpool/config";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
 import { SettingsDiagnostics } from "@/features/network/components/SettingsDiagnostics";
+import { SettingsWalletConnectAction } from "@/features/wallet/components/SettingsWalletConnectAction";
 import { getOnchainConfig } from "@/lib/onchain";
 
 export default function SettingsPage() {
@@ -39,6 +40,7 @@ export default function SettingsPage() {
           <SettingsDiagnostics />
         </div>
         <AddArcNetworkButton className="mt-6" label="Add / Switch to Arc Testnet" />
+        <SettingsWalletConnectAction />
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
