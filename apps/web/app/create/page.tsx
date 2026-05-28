@@ -1,4 +1,5 @@
 import { CreatePoolForm } from "@/features/pools/components/CreatePoolForm";
+import { CreateWalletStatus } from "@/features/wallet/components/CreateWalletStatus";
 
 export default function CreatePage() {
   return (
@@ -8,6 +9,7 @@ export default function CreatePage() {
         <h1 className="mt-2 text-3xl font-semibold text-white md:text-4xl">Launch a transparent USDC funding pool</h1>
         <p className="mt-3 text-[var(--muted)]">Keep the form short, publish metadata, and create the funding pool on Arc Testnet.</p>
       </div>
+      <CreateWalletStatus />
       <CreatePoolForm />
     </section>
   );
