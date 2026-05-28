@@ -1,6 +1,5 @@
-import { arcTestnet } from "@arcfundpool/config";
-
-const ARC_TESTNET_CHAIN_ID_HEX = `0x${arcTestnet.id.toString(16)}`;
+export const ARC_TESTNET_CHAIN_ID = 5042002;
+export const ARC_TESTNET_CHAIN_ID_HEX = "0x4CF0D2";
 
 type EthereumRequest = (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 
@@ -17,7 +16,13 @@ function friendlyWalletError(error: unknown): NetworkActionResult {
     return { ok: false, message: "Wallet request was rejected." };
   }
 
-  if (message.includes("unsupported") || message.includes("not supported")) {
+  if (
+    maybeError?.code === -32601 ||
+    maybeError?.code === 4200 ||
+    message.includes("unsupported") ||
+    message.includes("not supported") ||
+    message.includes("method not found")
+  ) {
     return { ok: false, message: "Your wallet does not support automatic network switching." };
   }
 
@@ -25,12 +30,14 @@ function friendlyWalletError(error: unknown): NetworkActionResult {
 }
 
 export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<NetworkActionResult> {
-  if (!request) {
+  const walletRequest = request ?? (typeof window !== "undefined" ? window.ethereum?.request.bind(window.ethereum) : undefined);
+
+  if (!walletRequest) {
     return { ok: false, message: "Wallet not installed." };
   }
 
   try {
-    await request({
+    await walletRequest({
       method: "wallet_switchEthereumChain",
       params: [{ chainId: ARC_TESTNET_CHAIN_ID_HEX }]
     });
@@ -44,7 +51,7 @@ export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<
     }
 
     try {
-      await request({
+      await walletRequest({
         method: "wallet_addEthereumChain",
         params: [
           {
@@ -61,7 +68,17 @@ export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<
         ]
       });
 
-      return { ok: true, message: "Arc Testnet was added. Please switch to it in your wallet." };
+      try {
+        await walletRequest({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: ARC_TESTNET_CHAIN_ID_HEX }]
+        });
+
+        return { ok: true, message: "Switched to Arc Testnet." };
+      } catch (secondSwitchError) {
+        const friendly = friendlyWalletError(secondSwitchError);
+        return friendly.ok ? friendly : { ok: true, message: "Arc Testnet was added. Please switch to it in your wallet." };
+      }
     } catch (addError) {
       return friendlyWalletError(addError);
     }
@@ -69,5 +86,5 @@ export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<
 }
 
 export function isArcTestnet(chainId?: number) {
-  return chainId === arcTestnet.id;
+  return chainId === ARC_TESTNET_CHAIN_ID;
 }

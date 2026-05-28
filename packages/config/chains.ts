@@ -19,7 +19,7 @@ export const arcTestnet = {
   },
   blockExplorers: {
     default: {
-      name: "Arc Explorer",
+      name: "Arcscan",
       // TODO: Set NEXT_PUBLIC_ARC_EXPLORER_URL before deployment.
       url: env.arcExplorerUrl || fallbackExplorerUrl
     }
