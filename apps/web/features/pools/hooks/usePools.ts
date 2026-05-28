@@ -34,9 +34,18 @@ export function usePools() {
     setError(null);
     try {
       setDataset(await loadPoolDataset());
-    } catch {
+    } catch (error) {
       const config = getOnchainConfig();
       if (config.hasContract) {
+        const maybeError = error as { name?: string; message?: string; shortMessage?: string };
+        console.warn("[ArcFundPool] Pool dataset load failed", {
+          name: maybeError?.name,
+          message: maybeError?.message,
+          shortMessage: maybeError?.shortMessage,
+          rpcUrl: config.rpcUrl,
+          contractAddress: config.contractAddress,
+          chainId: config.chainId
+        });
         setDataset({
           pools: [],
           contributions: [],

@@ -131,6 +131,12 @@ export async function loadPoolDataset(): Promise<PoolDataset> {
   }
 
   if (!client || !config.contractAddress) {
+    console.warn("[ArcFundPool] Arc Testnet read configuration is incomplete", {
+      missing: config.missing,
+      rpcUrl: config.rpcUrl,
+      contractAddress: config.contractAddress,
+      chainId: config.chainId
+    });
     throw new Error(`Arc Testnet RPC is not configured. Missing: ${config.missing.join(", ")}`);
   }
 
@@ -185,7 +191,17 @@ export async function loadPoolDataset(): Promise<PoolDataset> {
       isFallback: false
     };
   } catch (error) {
-    console.error("ArcFundPool read failed", error);
+    const maybeError = error as { name?: string; message?: string; shortMessage?: string; cause?: unknown };
+    console.warn("[ArcFundPool] Failed to read Arc Testnet pool data", {
+      name: maybeError?.name,
+      message: maybeError?.message,
+      shortMessage: maybeError?.shortMessage,
+      cause: maybeError?.cause,
+      rpcUrl: config.rpcUrl,
+      contractAddress: config.contractAddress,
+      chainId: config.chainId,
+      functions: ["poolCount()", "pools(uint256)", "contributions(uint256,address)"]
+    });
     throw error;
   }
 }

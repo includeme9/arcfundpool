@@ -35,11 +35,12 @@ function friendlyWalletError(error: unknown, context: string): NetworkActionResu
     return { ok: false, message: "Your wallet does not support automatic network switching." };
   }
 
-  return { ok: false, message: "Unable to switch networks. Please switch to Arc Testnet in your wallet." };
+  return { ok: false, message: "Unable to switch network. Please add Arc Testnet manually." };
 }
 
 export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<NetworkActionResult> {
-  const walletRequest = request ?? (typeof window !== "undefined" ? window.ethereum?.request.bind(window.ethereum) : undefined);
+  const injectedRequest = typeof window !== "undefined" ? window.ethereum?.request.bind(window.ethereum) : undefined;
+  const walletRequest = injectedRequest ?? request;
 
   if (!walletRequest) {
     return { ok: false, message: "Wallet not installed." };

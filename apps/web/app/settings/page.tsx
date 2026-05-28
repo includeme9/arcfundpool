@@ -1,6 +1,7 @@
 import { CheckCircle2, CircleDollarSign, Network, Wallet, type LucideIcon } from "lucide-react";
 import { arcTestnet, CONTRACTS, USDC_TOKEN } from "@arcfundpool/config";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
+import { SettingsDiagnostics } from "@/features/network/components/SettingsDiagnostics";
 import { getOnchainConfig } from "@/lib/onchain";
 
 export default function SettingsPage() {
@@ -28,13 +29,14 @@ export default function SettingsPage() {
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Info label="Mode" value={config.hasContract ? "Onchain mode" : "Fallback preview mode"} />
           <Info label="Network" value="Arc Testnet" />
-          <Info label="Chain ID" value="5042002" />
-          <Info label="RPC" value="https://rpc.testnet.arc.network" />
-          <Info label="Explorer" value="https://testnet.arcscan.app" />
+          <Info label="Chain ID" value={String(arcTestnet.id)} />
+          <Info label="RPC" value={config.rpcUrl ?? "https://rpc.testnet.arc.network"} />
+          <Info label="Explorer" value={config.explorerUrl || "https://testnet.arcscan.app"} />
           <Info label="Gas token" value="USDC" />
           <Info label="Settlement asset" value={USDC_TOKEN.symbol} />
           <Info label="ArcFundPool contract" value={CONTRACTS.arcFundPool.address} />
           <Info label="USDC address" value={USDC_TOKEN.address} />
+          <SettingsDiagnostics />
         </div>
         <AddArcNetworkButton className="mt-6" label="Add / Switch to Arc Testnet" />
       </div>
@@ -65,7 +67,7 @@ function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
       <p className="text-xs text-[var(--muted)]">{label}</p>
-      <p className="mt-2 font-semibold text-white">{value}</p>
+      <p className="mt-2 break-words font-semibold text-white">{value}</p>
     </div>
   );
 }
