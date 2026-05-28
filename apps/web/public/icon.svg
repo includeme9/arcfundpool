@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ArcFundPool">
+  <defs>
+    <linearGradient id="arc" x1="96" y1="416" x2="416" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2775CA"/>
+      <stop offset=".52" stop-color="#37D5FF"/>
+      <stop offset="1" stop-color="#8D7CFF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="38%" r="65%">
+      <stop stop-color="#102D4D"/>
+      <stop offset="1" stop-color="#06101F"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <circle cx="256" cy="256" r="166" fill="none" stroke="url(#arc)" stroke-width="38"/>
+  <circle cx="256" cy="78" r="28" fill="#37D5FF"/>
+  <circle cx="420" cy="256" r="28" fill="#4AA3FF"/>
+  <circle cx="256" cy="434" r="28" fill="#8D7CFF"/>
+  <circle cx="92" cy="256" r="22" fill="#2775CA"/>
+  <path d="M166 366 256 126l90 240h-53l-17-52h-41l-17 52h-52Zm84-97h12l-6-19-6 19Z" fill="#EEF6FF"/>
+</svg>
