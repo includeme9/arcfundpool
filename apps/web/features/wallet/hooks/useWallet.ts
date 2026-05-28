@@ -5,6 +5,9 @@ import { arcTestnet, env } from "@arcfundpool/config";
 
 export type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  connect?: () => Promise<unknown>;
+  enable?: () => Promise<unknown>;
+  accounts?: string[];
   on?: (event: string, listener: (...args: unknown[]) => void) => void;
   removeListener?: (event: string, listener: (...args: unknown[]) => void) => void;
   disconnect?: () => Promise<void>;
@@ -42,18 +45,25 @@ function warnMissingProjectId() {
   }
 }
 
-function walletConnectErrorMessage(error: unknown) {
+function walletErrorMessage(error: unknown, connectorName: string) {
   const maybeError = error as { message?: string; code?: number };
-  console.warn("[ArcFundPool] WalletConnect connection failed", {
+  console.warn("[ArcFundPool] Wallet connection failed", {
+    connectorName,
     code: maybeError?.code,
     message: maybeError?.message
   });
 
-  if (maybeError?.message?.toLowerCase().includes("user rejected")) {
+  const message = maybeError?.message?.toLowerCase() ?? "";
+
+  if (maybeError?.code === 4001 || message.includes("user rejected") || message.includes("rejected")) {
     return "Wallet request was rejected.";
   }
 
-  return "WalletConnect could not be opened. Check the Project ID configuration and try again.";
+  if (connectorName === "WalletConnect" && message.includes("not supported")) {
+    return "Your wallet app may not support this connection method.";
+  }
+
+  return "Wallet connection is unavailable. Please try again.";
 }
 
 function parseChainId(chainIdHex?: string) {
@@ -62,7 +72,7 @@ function parseChainId(chainIdHex?: string) {
 
 async function readProviderState(provider?: EthereumProvider) {
   if (!provider) return { address: undefined, chainId: undefined };
-  const accounts = (await provider.request({ method: "eth_accounts" })) as string[] | undefined;
+  const accounts = ((await provider.request({ method: "eth_accounts" })) as string[] | undefined) ?? provider.accounts;
   const chainIdHex = (await provider.request({ method: "eth_chainId" })) as string | undefined;
   return {
     address: accounts?.[0],
@@ -122,6 +132,8 @@ const walletStore = create<WalletState>((set, get) => ({
       set({ provider: window.ethereum, connector: "injected" });
       attachProviderEvents(window.ethereum, get().refreshWallet);
       await get().refreshWallet();
+    } catch (error) {
+      set({ walletError: walletErrorMessage(error, "Injected wallet") });
     } finally {
       set({ isConnecting: false });
     }
@@ -134,12 +146,18 @@ const walletStore = create<WalletState>((set, get) => ({
         set({ walletError: "WalletConnect Project ID is not configured." });
         return;
       }
-      await provider.request({ method: "eth_requestAccounts" });
+      if (typeof provider.enable === "function") {
+        await provider.enable();
+      } else if (typeof provider.connect === "function") {
+        await provider.connect();
+      } else {
+        await provider.request({ method: "eth_requestAccounts" });
+      }
       set({ provider, connector: "walletconnect" });
       attachProviderEvents(provider, get().refreshWallet);
       await get().refreshWallet();
     } catch (error) {
-      set({ walletError: walletConnectErrorMessage(error) });
+      set({ walletError: walletErrorMessage(error, "WalletConnect") });
     } finally {
       set({ isConnecting: false });
     }
