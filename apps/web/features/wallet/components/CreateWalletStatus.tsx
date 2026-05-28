@@ -3,12 +3,10 @@
 import { CheckCircle2, Wallet } from "lucide-react";
 import { shortenAddress } from "@arcfundpool/utils";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
-import { isArcTestnet } from "@/features/network/utils/arcNetwork";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
 
 export function CreateWalletStatus() {
-  const { address, chainId, connect, isConnected, isConnecting, hasInjectedWallet, hasWalletConnect } = useWallet();
-  const wrongNetwork = isConnected && !isArcTestnet(chainId);
+  const { address, connect, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
 
   if (!isConnected) {
@@ -27,13 +25,14 @@ export function CreateWalletStatus() {
             >
               {isConnecting ? "Opening wallet" : "Connect Wallet"}
             </button>
+            {!canConnect && <p className="mt-3 text-sm text-amber-100">Use WalletConnect or open this site in your wallet browser.</p>}
           </div>
         </div>
       </section>
     );
   }
 
-  if (wrongNetwork) {
+  if (isWrongNetwork) {
     return (
       <section className="mt-6 rounded-3xl border border-amber-300/25 bg-amber-300/10 p-4 lg:hidden">
         <h2 className="font-semibold text-white">Switch to Arc Testnet before creating a pool.</h2>

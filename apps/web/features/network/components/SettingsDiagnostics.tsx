@@ -5,13 +5,16 @@ import { useWallet } from "@/features/wallet/hooks/useWallet";
 import { ARC_TESTNET_CHAIN_ID } from "@/features/network/utils/arcNetwork";
 
 export function SettingsDiagnostics() {
-  const { chainId } = useWallet();
+  const { address, chainId, isArcTestnet, isConnected } = useWallet();
 
   return (
     <>
+      <Info label="Wallet connected" value={isConnected ? "Yes" : "No"} />
+      <Info label="Wallet address" value={address ?? "Not connected"} />
       <Info label="WalletConnect project ID configured" value={env.walletConnectProjectId ? "Yes" : "No"} />
       <Info label="Current wallet chain ID" value={chainId ? String(chainId) : "Not connected"} />
       <Info label="Expected chain ID" value={String(ARC_TESTNET_CHAIN_ID)} />
+      <Info label="Is Arc Testnet" value={isArcTestnet ? "Yes" : "No"} />
     </>
   );
 }

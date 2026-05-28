@@ -1,16 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Wallet } from "lucide-react";
+import { AlertTriangle, Wallet } from "lucide-react";
 import { shortenAddress } from "@arcfundpool/utils";
 import { AddArcNetworkButton } from "@/features/network/components/AddArcNetworkButton";
-import { isArcTestnet } from "@/features/network/utils/arcNetwork";
 import { useWallet } from "@/features/wallet/hooks/useWallet";
 
 export function MobileHeader() {
-  const { address, chainId, connect, isConnected, isConnecting, hasInjectedWallet, hasWalletConnect } = useWallet();
-  const wrongNetwork = isConnected && !isArcTestnet(chainId);
+  const { address, connect, isArcTestnet, isConnected, isConnecting, isWrongNetwork, hasInjectedWallet, hasWalletConnect } = useWallet();
   const canConnect = hasInjectedWallet || hasWalletConnect;
+  const subtitle = !isConnected ? "Connect wallet" : isArcTestnet ? "Arc Testnet USDC" : "Wrong network";
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#06101f]/95 backdrop-blur-xl lg:hidden">
@@ -21,7 +20,7 @@ export function MobileHeader() {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">ArcFundPool</p>
-            <p className="truncate text-[11px] text-[var(--muted)]">Arc Testnet USDC</p>
+            <p className="truncate text-[11px] text-[var(--muted)]">{subtitle}</p>
           </div>
         </Link>
 
@@ -38,14 +37,20 @@ export function MobileHeader() {
             </button>
           )}
 
-          {isConnected && wrongNetwork && (
-            <AddArcNetworkButton className="[&_button]:min-h-[40px] [&_button]:px-3 [&_button]:py-2 [&_button]:text-xs [&_p]:hidden" label="Switch to Arc" />
+          {isConnected && isWrongNetwork && (
+            <div className="flex items-center gap-1.5">
+              <span className="hidden items-center gap-1 rounded-full border border-amber-300/25 bg-amber-300/10 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100 sm:inline-flex">
+                <AlertTriangle size={12} />
+                Wrong Network
+              </span>
+              <AddArcNetworkButton className="[&_button]:min-h-[40px] [&_button]:px-3 [&_button]:py-2 [&_button]:text-xs [&_p]:hidden" label="Switch to Arc Testnet" />
+            </div>
           )}
 
-          {isConnected && !wrongNetwork && (
+          {isConnected && isArcTestnet && (
             <div className="flex min-w-0 items-center gap-1.5">
               <span className="rounded-full border border-cyan-300/18 bg-cyan-300/[0.08] px-2.5 py-1.5 text-[11px] font-semibold text-cyan-100">
-                Arc / USDC
+                Arc Testnet / USDC gas
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.045] px-2.5 py-1.5 text-[11px] font-semibold text-white">
                 {shortenAddress(address)}

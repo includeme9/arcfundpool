@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { arcTestnet, env } from "@arcfundpool/config";
+import { addOrSwitchArcTestnet, isArcTestnet } from "@/features/network/utils/arcNetwork";
 
 export type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -27,6 +28,7 @@ type WalletState = {
   connectWalletConnect: () => Promise<void>;
   refreshWallet: () => Promise<void>;
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  switchToArcTestnet: () => Promise<{ ok: boolean; message: string }>;
 };
 
 declare global {
@@ -64,6 +66,10 @@ function walletErrorMessage(error: unknown, connectorName: string) {
   }
 
   return "Wallet connection is unavailable. Please try again.";
+}
+
+function mobileNoProviderMessage(hasWalletConnect: boolean) {
+  return hasWalletConnect ? "Use WalletConnect or open this site in your wallet browser." : "Use an injected wallet or configure WalletConnect.";
 }
 
 function parseChainId(chainIdHex?: string) {
@@ -125,7 +131,10 @@ const walletStore = create<WalletState>((set, get) => ({
     set({ ...state, provider });
   },
   async connectInjected() {
-    if (!window.ethereum) return;
+    if (!window.ethereum) {
+      set({ walletError: mobileNoProviderMessage(Boolean(env.walletConnectProjectId)) });
+      return;
+    }
     set({ isConnecting: true, walletError: undefined });
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -172,7 +181,22 @@ const walletStore = create<WalletState>((set, get) => ({
   },
   async request(args) {
     const provider = get().provider ?? (typeof window !== "undefined" ? window.ethereum : undefined);
-    return provider?.request(args);
+    if (!provider) {
+      throw new Error(mobileNoProviderMessage(Boolean(env.walletConnectProjectId)));
+    }
+    return provider.request(args);
+  },
+  async switchToArcTestnet() {
+    const provider = get().provider ?? (typeof window !== "undefined" ? window.ethereum : undefined);
+    const result = await addOrSwitchArcTestnet(provider?.request.bind(provider));
+    set({ walletError: result.ok ? undefined : result.message });
+    await get().refreshWallet();
+
+    if (result.ok && typeof window !== "undefined") {
+      window.setTimeout(() => void get().refreshWallet(), 750);
+    }
+
+    return result;
   }
 }));
 
@@ -188,6 +212,8 @@ export function useWallet() {
   return {
     ...state,
     isConnected: Boolean(state.address),
+    isArcTestnet: isArcTestnet(state.chainId),
+    isWrongNetwork: Boolean(state.address) && !isArcTestnet(state.chainId),
     hasInjectedWallet,
     hasWalletConnect
   };

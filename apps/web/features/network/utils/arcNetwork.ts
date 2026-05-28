@@ -40,7 +40,7 @@ function friendlyWalletError(error: unknown, context: string): NetworkActionResu
 
 export async function addOrSwitchArcTestnet(request?: EthereumRequest): Promise<NetworkActionResult> {
   const injectedRequest = typeof window !== "undefined" ? window.ethereum?.request.bind(window.ethereum) : undefined;
-  const walletRequest = injectedRequest ?? request;
+  const walletRequest = request ?? injectedRequest;
 
   if (!walletRequest) {
     return { ok: false, message: "Wallet not installed." };
